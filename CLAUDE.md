@@ -89,6 +89,15 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## Color Usage
+
+**Use only grayscale colors (white to black spectrum). No other colors.**
+
+- **Colors**: Black, white, and gray shades only
+- **Implementation**: Use zinc scale from Tailwind CSS
+- **Dark mode**: Always provide `dark:` variants
+- **Priority**: Prefer CSS variables (`bg-background`, `text-foreground`) over hardcoded colors
+
 ## Application Architecture
 
 The app follows a three-zone layout:

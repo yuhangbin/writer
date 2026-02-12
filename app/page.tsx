@@ -400,7 +400,6 @@ export default function Home() {
           <UserProfileHeader
             user={user}
             onLogout={logout}
-            onSettingsClick={() => setSettingsOpen(true)}
           />
         }
       />

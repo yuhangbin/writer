@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, LogOut, Settings, ChevronDown } from 'lucide-react';
+import { User, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,10 +16,9 @@ import type { User as UserType } from '@/hooks/use-auth';
 interface UserProfileHeaderProps {
   user: UserType | null;
   onLogout: () => Promise<void>;
-  onSettingsClick?: () => void;
 }
 
-export function UserProfileHeader({ user, onLogout, onSettingsClick }: UserProfileHeaderProps) {
+export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -94,20 +93,6 @@ export function UserProfileHeader({ user, onLogout, onSettingsClick }: UserProfi
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-
-          {onSettingsClick && (
-            <DropdownMenuItem
-              onClick={() => {
-                onSettingsClick();
-                setIsOpen(false);
-              }}
-              className="cursor-pointer"
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Settings</span>
-            </DropdownMenuItem>
-          )}
-
           <DropdownMenuItem
             onClick={handleLogout}
             className="cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"

@@ -18,11 +18,3 @@ Editor: Tiptap (集成基础格式：标题、加粗、列表)
 Icons: Lucide React
 Persistence: 初始版本使用 localStorage 进行持久化。
 CodeStyle: 使用TypeScript，禁止使用any
-
-
-writer_root
-yuhangbin129
-
-DATABASE_URL="postgresql://writer_root:yuhangbin129@localhost:5432/writer"
-
-sudo -u postgres psql -c "ALTER USER nextjs_user WITH PASSWORD 'new_secure_password';"
