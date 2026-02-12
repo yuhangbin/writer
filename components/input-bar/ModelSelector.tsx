@@ -29,14 +29,9 @@ export function ModelSelector({
       onValueChange={onModelChange}
       disabled={disabled}
     >
-      <SelectTrigger className="w-[180px] h-[80px] shrink-0 rounded-md border-l border-zinc-200 dark:border-zinc-700">
+      <SelectTrigger className="px-3 py-2 rounded-lg border border-zinc-300 bg-white text-zinc-900 text-sm focus:ring-2 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:ring-zinc-400 min-w-[140px]">
         <SelectValue placeholder="Select model">
-          <div className="flex flex-col items-start">
-            <span className="text-xs text-zinc-500">Model</span>
-            <span className="text-sm font-medium truncate">
-              {selectedModel?.name || 'Select model'}
-            </span>
-          </div>
+          {selectedModel?.name || 'Select model'}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>

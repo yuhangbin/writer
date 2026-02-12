@@ -67,7 +67,7 @@ export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
             className="flex items-center gap-2 px-2 py-1 hover:bg-zinc-100 data-[state=open]:bg-zinc-100 dark:hover:bg-zinc-800 dark:data-[state=open]:bg-zinc-800"
           >
             {/* Avatar with initials */}
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900">
               <span className="text-xs font-medium">{getUserInitials(user.username)}</span>
             </div>
 
@@ -95,7 +95,7 @@ export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleLogout}
-            className="cursor-pointer text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
+            className="cursor-pointer text-zinc-600 focus:text-zinc-600 dark:text-zinc-400 dark:focus:text-zinc-400"
           >
             <LogOut className="mr-2 h-4 w-4" />
             <span>Logout</span>

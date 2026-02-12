@@ -98,7 +98,7 @@ export function ArticleHistoryList({
                   onClick={(e) => handleDelete(e, article.id)}
                   title="Delete article"
                 >
-                  <Trash2 className="h-3 w-3 text-red-600 dark:text-red-400" />
+                  <Trash2 className="h-3 w-3 text-zinc-600 dark:text-zinc-400" />
                 </Button>
               </div>
             ))}

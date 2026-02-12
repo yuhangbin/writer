@@ -3,7 +3,7 @@
 import { useState, useCallback, KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, X } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { ModelSelector } from './ModelSelector';
 
 interface InputBarProps {
@@ -40,11 +40,6 @@ export function InputBar({
     [onChange, maxLength]
   );
 
-  const handleClear = useCallback(() => {
-    setLocalValue('');
-    onChange('');
-  }, [onChange]);
-
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -64,21 +59,19 @@ export function InputBar({
   const canGenerate = localValue.trim().length > 0 && !isLoading;
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      {/* Visual wrapper for unified appearance */}
-      <div className="flex items-end gap-2 rounded-lg border border-zinc-300 bg-white p-2 shadow-sm transition-shadow duration-200 focus-within:border-zinc-400 focus-within:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
+    <div className="flex flex-col gap-2 p-4">
+      {/* Compact horizontal bar */}
+      <div className="flex items-end gap-2 p-3 rounded-xl border border-zinc-300 bg-white shadow-sm focus-within:ring-2 focus-within:ring-zinc-900 focus-within:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:focus-within:ring-zinc-400 dark:focus-within:border-zinc-400 transition-all">
         {/* Textarea */}
-        <div className="flex-1">
-          <Textarea
-            value={localValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Enter your writing prompt here... (⌘+Enter to generate)"
-            className="min-h-[80px] resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-            disabled={isLoading}
-            maxLength={maxLength}
-          />
-        </div>
+        <Textarea
+          value={localValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="What would you like to write? (⌘+Enter)"
+          className="flex-1 min-h-[60px] max-h-[200px] p-2 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent shadow-none"
+          disabled={isLoading}
+          maxLength={maxLength}
+        />
 
         {/* Model Selector */}
         {selectedModelId && onModelChange && (
@@ -89,38 +82,19 @@ export function InputBar({
           />
         )}
 
-        {/* Button Group */}
-        <div className="flex gap-1">
-          {localValue && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClear}
-              disabled={isLoading}
-              className="h-[80px] w-[80px] shrink-0 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              title="Clear input"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          )}
-          <Button
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            className="h-[80px] w-[80px] shrink-0 bg-pink-600 text-white hover:bg-pink-700 disabled:opacity-50"
-            title="Generate content"
-          >
-            <Sparkles className="h-5 w-5" />
-          </Button>
-        </div>
+        {/* Generate Button */}
+        <Button
+          onClick={handleGenerate}
+          disabled={!canGenerate}
+          className="px-5 py-2.5 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+          title="Generate (⌘+Enter)"
+        >
+          <Sparkles className="h-4 w-4" />
+        </Button>
       </div>
 
-      {/* Character count and keyboard shortcut hint */}
-      <div className="flex items-center justify-between text-xs text-zinc-500">
-        <p>
-          {localValue.length}/{maxLength} characters
-        </p>
-        <p>Press ⌘+Enter to generate</p>
-      </div>
+      {/* Keyboard shortcut hint */}
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">Press ⌘+Enter to generate</p>
     </div>
   );
 }

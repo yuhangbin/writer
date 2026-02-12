@@ -137,7 +137,7 @@ export function WorkspaceSidebar({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        className="h-6 w-6 text-zinc-600 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
                         onClick={(e) => handleDelete(e, workspace.id)}
                         title="Delete workspace"
                       >
