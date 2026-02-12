@@ -1,0 +1,329 @@
+/**
+ * PostgreSQL Database Connection Utility
+ *
+ * This module provides database connection pooling and query helpers
+ * for the Writer application using the pg library.
+ */
+
+import { Pool, PoolClient, QueryResult } from 'pg';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface DatabaseConfig {
+  host?: string;
+  port?: number;
+  database?: string;
+  user?: string;
+  password?: string;
+  connectionString?: string;
+  max?: number;
+  min?: number;
+  idleTimeoutMillis?: number;
+  connectionTimeoutMillis?: number;
+}
+
+// ============================================================================
+// Query Helper Types
+// ============================================================================
+
+export type QueryParams = readonly unknown[];
+
+export interface QueryOptions {
+  // Transaction timeout in milliseconds
+  timeout?: number;
+  // Row mode: 'array' for arrays, 'object' for objects (default)
+  rowMode?: 'array' | 'object';
+}
+
+// ============================================================================
+// Database Connection Pool
+// ============================================================================
+
+let pool: Pool | null = null;
+
+/**
+ * Get or create the database connection pool
+ */
+export function getPool(config?: DatabaseConfig): Pool {
+  if (pool) {
+    return pool;
+  }
+
+  const poolConfig: DatabaseConfig = config || {
+    connectionString: process.env.DATABASE_URL,
+    // Connection pool settings
+    max: parseInt(process.env.PG_POOL_MAX || '10', 10),
+    min: parseInt(process.env.PG_POOL_MIN || '2', 10),
+    idleTimeoutMillis: parseInt(process.env.PG_IDLE_TIMEOUT || '30000', 10),
+    connectionTimeoutMillis: parseInt(process.env.PG_CONNECTION_TIMEOUT || '10000', 10),
+  };
+
+  // Validate connection
+  if (!poolConfig.connectionString && !process.env.DATABASE_URL) {
+    throw new Error(
+      'Database connection string not found. Set DATABASE_URL environment variable or pass config.'
+    );
+  }
+
+  pool = new Pool(poolConfig);
+
+  // Handle pool errors
+  pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+  });
+
+  return pool;
+}
+
+/**
+ * Close all database connections in the pool
+ */
+export async function closePool(): Promise<void> {
+  if (pool) {
+    await pool.end();
+    pool = null;
+  }
+}
+
+/**
+ * Test database connection
+ */
+export async function testConnection(): Promise<boolean> {
+  try {
+    const client = getPool();
+    const result = await client.query('SELECT NOW() as current_time');
+    console.log('Database connection successful:', result.rows[0].current_time);
+    return true;
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    return false;
+  }
+}
+
+// ============================================================================
+// Query Functions
+// ============================================================================
+
+/**
+ * Execute a SQL query
+ *
+ * @param sql - SQL query string
+ * @param params - Query parameters
+ * @returns Query result
+ */
+export async function query<T = unknown>(
+  sql: string,
+  params?: QueryParams
+): Promise<QueryResult<T>> {
+  const pool = getPool();
+  const start = Date.now();
+
+  try {
+    const result = await pool.query<T>(sql, params);
+    const duration = Date.now() - start;
+
+    // Log slow queries (> 1000ms)
+    if (duration > 1000) {
+      console.warn(`Slow query (${duration}ms): ${sql.substring(0, 100)}...`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Query error:', { sql, params, error });
+    throw error;
+  }
+}
+
+/**
+ * Execute a query and return the first row
+ *
+ * @param sql - SQL query string
+ * @param params - Query parameters
+ * @returns First row or null
+ */
+export async function queryOne<T = unknown>(
+  sql: string,
+  params?: QueryParams
+): Promise<T | null> {
+  const result = await query<T>(sql, params);
+  return result.rows[0] || null;
+}
+
+/**
+ * Execute a query and return all rows
+ *
+ * @param sql - SQL query string
+ * @param params - Query parameters
+ * @returns Array of rows
+ */
+export async function queryMany<T = unknown>(
+  sql: string,
+  params?: QueryParams
+): Promise<T[]> {
+  const result = await query<T>(sql, params);
+  return result.rows;
+}
+
+// ============================================================================
+// Transaction Support
+// ============================================================================
+
+/**
+ * Execute a function within a database transaction
+ *
+ * @param callback - Function to execute within transaction
+ * @returns Result of the callback
+ */
+export async function transaction<T>(
+  callback: (client: PoolClient) => Promise<T>
+): Promise<T> {
+  const pool = getPool();
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+    const result = await callback(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+// ============================================================================
+// Database Schema Queries
+// ============================================================================
+
+export const db = {
+  // Workspaces
+  getWorkspaces: () => queryMany<Workspace>('SELECT * FROM workspaces ORDER BY created_at DESC'),
+  getWorkspaceById: (id: string) => queryOne<Workspace>('SELECT * FROM workspaces WHERE id = $1', [id]),
+  createWorkspace: (data: Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>) =>
+    queryOne<Workspace>(
+      `INSERT INTO workspaces (name, target_reader, reference_example, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $4)
+       RETURNING *`,
+      [data.name, data.targetReader, data.referenceExample, Date.now()]
+    ),
+  updateWorkspace: (id: string, data: Partial<Omit<Workspace, 'id' | 'createdAt' | 'updatedAt'>>) =>
+    queryOne<Workspace>(
+      `UPDATE workspaces
+       SET name = COALESCE($1, name),
+           target_reader = COALESCE($2, target_reader),
+           reference_example = COALESCE($3, reference_example)
+       WHERE id = $4
+       RETURNING *`,
+      [data.name, data.targetReader, data.referenceExample, id]
+    ),
+  deleteWorkspace: (id: string) => query('DELETE FROM workspaces WHERE id = $1', [id]),
+
+  // Articles
+  getArticles: () => queryMany<Article>('SELECT * FROM articles ORDER BY created_at DESC'),
+  getArticlesByWorkspaceId: (workspaceId: string) =>
+    queryMany<Article>('SELECT * FROM articles WHERE workspace_id = $1 ORDER BY created_at DESC', [workspaceId]),
+  getArticleById: (id: string) => queryOne<Article>('SELECT * FROM articles WHERE id = $1', [id]),
+  createArticle: (data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>) =>
+    queryOne<Article>(
+      `INSERT INTO articles (workspace_id, title, content, prompt, word_count, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $6)
+       RETURNING *`,
+      [data.workspaceId, data.title, data.content, data.prompt, data.wordCount, Date.now()]
+    ),
+  updateArticle: (id: string, data: Partial<Omit<Article, 'id' | 'createdAt' | 'updatedAt' | 'workspaceId'>>) =>
+    queryOne<Article>(
+      `UPDATE articles
+       SET title = COALESCE($1, title),
+           content = COALESCE($2, content),
+           prompt = COALESCE($3, prompt),
+           word_count = COALESCE($4, word_count)
+       WHERE id = $5
+       RETURNING *`,
+      [data.title, data.content, data.prompt, data.wordCount, id]
+    ),
+  deleteArticle: (id: string) => query('DELETE FROM articles WHERE id = $1', [id]),
+
+  // App Settings
+  getAppSettings: () => queryOne<AppSettings>('SELECT * FROM app_settings LIMIT 1'),
+  updateAppSettings: (id: string, data: Partial<Omit<AppSettings, 'id' | 'createdAt' | 'updatedAt'>>) =>
+    queryOne<AppSettings>(
+      `UPDATE app_settings
+       SET selected_model_id = COALESCE($1, selected_model_id),
+           provider_configs = COALESCE($2, provider_configs)
+       WHERE id = $3
+       RETURNING *`,
+      [data.selectedModelId, JSON.stringify(data.providerConfigs || {}), id]
+    ),
+
+  // AI Models
+  getAIModels: () => queryMany<AIModel>('SELECT * FROM ai_models WHERE is_active = true ORDER BY provider, name'),
+  getAIModelById: (id: string) => queryOne<AIModel>('SELECT * FROM ai_models WHERE id = $1', [id]),
+};
+
+// ============================================================================
+// TypeScript Types for Database Rows
+// ============================================================================
+
+export interface Workspace {
+  id: string;
+  name: string;
+  target_reader: string | null;
+  reference_example: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface Article {
+  id: string;
+  workspace_id: string;
+  title: string;
+  content: string | null;
+  prompt: string | null;
+  word_count: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface AppSettings {
+  id: string;
+  selected_model_id: string;
+  provider_configs: Record<string, unknown>;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface AIModel {
+  id: string;
+  provider: string;
+  name: string;
+  description: string | null;
+  max_tokens: number | null;
+  is_active: boolean;
+  created_at: number;
+  updated_at: number;
+}
+
+// ============================================================================
+// Initialization
+// ============================================================================
+
+/**
+ * Initialize database connection (call during app startup)
+ */
+export async function initDatabase(): Promise<void> {
+  try {
+    const connected = await testConnection();
+    if (connected) {
+      console.log('✅ Database connected successfully');
+    } else {
+      console.warn('⚠️  Database connection test failed');
+    }
+  } catch (error) {
+    console.error('❌ Failed to initialize database:', error);
+    throw error;
+  }
+}

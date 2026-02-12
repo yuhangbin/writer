@@ -1,0 +1,115 @@
+import type { AppState, Article, Workspace } from '@/types';
+import { DEFAULT_MODEL_ID } from '@/lib/ai-models';
+
+const STORAGE_KEY = 'ai-writer-app-state';
+
+const defaultAppState: AppState = {
+  workspaces: [],
+  currentWorkspaceId: null,
+  currentArticleId: null,
+  articles: [],
+  selectedModelId: DEFAULT_MODEL_ID,
+};
+
+export function loadAppState(): AppState {
+  if (typeof window === 'undefined') {
+    return defaultAppState;
+  }
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as AppState;
+      // Migrate old state by adding selectedModelId if missing
+      if (!parsed.selectedModelId) {
+        parsed.selectedModelId = DEFAULT_MODEL_ID;
+      }
+      return parsed;
+    }
+  } catch (error) {
+    console.error('Failed to load app state:', error);
+  }
+
+  return defaultAppState;
+}
+
+export function saveAppState(state: AppState): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error('Failed to save app state:', error);
+  }
+}
+
+export function saveWorkspace(workspace: Workspace): void {
+  const state = loadAppState();
+  const existingIndex = state.workspaces.findIndex((w) => w.id === workspace.id);
+
+  if (existingIndex >= 0) {
+    state.workspaces[existingIndex] = workspace;
+  } else {
+    state.workspaces.push(workspace);
+  }
+
+  state.workspaces.sort((a, b) => b.updatedAt - a.updatedAt);
+  saveAppState(state);
+}
+
+export function deleteWorkspace(workspaceId: string): void {
+  const state = loadAppState();
+  state.workspaces = state.workspaces.filter((w) => w.id !== workspaceId);
+
+  if (state.currentWorkspaceId === workspaceId) {
+    state.currentWorkspaceId = null;
+  }
+
+  // Delete all articles for this workspace
+  state.articles = state.articles.filter((a) => a.workspaceId !== workspaceId);
+
+  saveAppState(state);
+}
+
+export function saveArticle(article: Article): void {
+  const state = loadAppState();
+  const existingIndex = state.articles.findIndex((a) => a.id === article.id);
+
+  if (existingIndex >= 0) {
+    state.articles[existingIndex] = article;
+  } else {
+    state.articles.push(article);
+  }
+
+  saveAppState(state);
+}
+
+export function getArticlesByWorkspace(workspaceId: string): Article[] {
+  const state = loadAppState();
+  return state.articles
+    .filter((a) => a.workspaceId === workspaceId)
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export function deleteArticle(articleId: string): void {
+  const state = loadAppState();
+  state.articles = state.articles.filter((a) => a.id !== articleId);
+
+  if (state.currentArticleId === articleId) {
+    state.currentArticleId = null;
+  }
+
+  saveAppState(state);
+}
+
+export function getCurrentArticle(state: AppState): Article | null {
+  if (!state.currentArticleId) return null;
+  return state.articles.find((a) => a.id === state.currentArticleId) || null;
+}
+
+export function getArticleById(articleId: string): Article | null {
+  const state = loadAppState();
+  return state.articles.find((a) => a.id === articleId) || null;
+}
