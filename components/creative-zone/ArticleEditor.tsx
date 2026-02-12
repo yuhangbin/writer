@@ -36,8 +36,33 @@ const MenuButton = ({
     size="sm"
     onClick={onClick}
     className={cn(
-      'h-8 w-8 p-0',
-      active && 'bg-zinc-200 dark:bg-zinc-700'
+      'rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800',
+      active && 'bg-zinc-200 dark:bg-zinc-800'
+    )}
+    title={title}
+  >
+    {children}
+  </Button>
+);
+
+const HeadingButton = ({
+  onClick,
+  active,
+  children,
+  title,
+}: {
+  onClick: () => void;
+  active?: boolean;
+  children: React.ReactNode;
+  title: string;
+}) => (
+  <Button
+    variant="ghost"
+    size="sm"
+    onClick={onClick}
+    className={cn(
+      'rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:text-zinc-300 dark:hover:bg-zinc-800',
+      active && 'bg-zinc-200 dark:bg-zinc-800'
     )}
     title={title}
   >
@@ -67,7 +92,7 @@ export function ArticleEditor({
     editorProps: {
       attributes: {
         class:
-          'prose prose-zinc dark:prose-invert max-w-none focus:outline-none min-h-full px-6 py-4',
+          'prose prose-zinc dark:prose-invert max-w-none focus:outline-none min-h-full',
       },
     },
     onUpdate: ({ editor }) => {
@@ -92,29 +117,29 @@ export function ArticleEditor({
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 border-b border-zinc-200 bg-zinc-50 p-2 dark:border-zinc-800 dark:bg-zinc-900/50">
-        <MenuButton
+      <div className="flex items-center gap-2 border-b border-zinc-100 bg-zinc-50 px-8 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+        <HeadingButton
           onClick={() => insertHeading(1)}
           active={editor.isActive('heading', { level: 1 })}
           title="Heading 1"
         >
-          <Heading1 className="h-4 w-4" />
-        </MenuButton>
-        <MenuButton
+          H1
+        </HeadingButton>
+        <HeadingButton
           onClick={() => insertHeading(2)}
           active={editor.isActive('heading', { level: 2 })}
           title="Heading 2"
         >
-          <Heading2 className="h-4 w-4" />
-        </MenuButton>
-        <MenuButton
+          H2
+        </HeadingButton>
+        <HeadingButton
           onClick={() => insertHeading(3)}
           active={editor.isActive('heading', { level: 3 })}
           title="Heading 3"
         >
-          <Heading3 className="h-4 w-4" />
-        </MenuButton>
-        <Separator orientation="vertical" className="mx-1 h-6" />
+          H3
+        </HeadingButton>
+        <Separator orientation="vertical" className="mx-2 h-4 bg-zinc-300 dark:bg-zinc-700" />
         <MenuButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive('bold')}
@@ -129,7 +154,7 @@ export function ArticleEditor({
         >
           <Italic className="h-4 w-4" />
         </MenuButton>
-        <Separator orientation="vertical" className="mx-1 h-6" />
+        <Separator orientation="vertical" className="mx-2 h-4 bg-zinc-300 dark:bg-zinc-700" />
         <MenuButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           active={editor.isActive('bulletList')}
@@ -144,7 +169,7 @@ export function ArticleEditor({
         >
           <ListOrdered className="h-4 w-4" />
         </MenuButton>
-        <Separator orientation="vertical" className="mx-1 h-6" />
+        <Separator orientation="vertical" className="mx-2 h-4 bg-zinc-300 dark:bg-zinc-700" />
         <MenuButton
           onClick={() => editor.chain().focus().unsetAllMarks().run()}
           title="Clear Formatting"
@@ -154,7 +179,7 @@ export function ArticleEditor({
       </div>
 
       {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto px-8 py-6">
         <EditorContent editor={editor} />
       </div>
 
