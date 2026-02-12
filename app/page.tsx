@@ -47,16 +47,14 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
 
-  // TEMPORARILY DISABLED: Redirect to login if not authenticated
+  // Redirect to login if not authenticated
   useEffect(() => {
-    // if (!authLoading && !user) {
-    //   router.push('/login');
-    // } else if (!authLoading && user) {
-    //   // Fetch workspaces only when authenticated
-    //   fetchWorkspaces();
-    // }
-    // Fetch workspaces for testing
-    fetchWorkspaces();
+    if (!authLoading && !user) {
+      router.push('/login');
+    } else if (!authLoading && user) {
+      // Fetch workspaces only when authenticated
+      fetchWorkspaces();
+    }
   }, [user, authLoading, router, fetchWorkspaces]);
 
   // Load articles when workspace changes
@@ -336,18 +334,18 @@ export default function Home() {
   }, []);
 
   // Show loading state while checking auth
-  // if (authLoading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-muted-foreground">Loading...</div>
-  //     </div>
-  //   );
-  // }
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
 
-  // TEMPORARILY DISABLED: Don't render if not authenticated
-  // if (!user) {
-  //   return null;
-  // }
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
 
   // Show loading for workspaces
   if (workspacesLoading) {
