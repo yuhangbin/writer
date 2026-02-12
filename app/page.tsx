@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import MainLayout from '@/components/layout/MainLayout';
+import { UserProfileHeader } from '@/components/layout/UserProfileHeader';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
 import { WorkspaceSettings } from '@/components/workspace/WorkspaceSettings';
 import { InputBar } from '@/components/input-bar/InputBar';
@@ -16,7 +17,7 @@ import { useArticles } from '@/hooks/use-articles';
 
 export default function Home() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth();
 
   const {
     workspaces,
@@ -393,6 +394,13 @@ export default function Home() {
             onExport={handleExport}
             hasWorkspace={!!currentWorkspaceId}
             articleTitle={articleTitle}
+          />
+        }
+        userProfile={
+          <UserProfileHeader
+            user={user}
+            onLogout={logout}
+            onSettingsClick={() => setSettingsOpen(true)}
           />
         }
       />

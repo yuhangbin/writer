@@ -65,18 +65,22 @@ export function InputBar({
 
   return (
     <div className="flex flex-col gap-3 p-4">
-      <div className="flex items-end gap-3">
+      {/* Visual wrapper for unified appearance */}
+      <div className="flex items-end gap-2 rounded-lg border border-zinc-300 bg-white p-2 shadow-sm transition-shadow duration-200 focus-within:border-zinc-400 focus-within:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
+        {/* Textarea */}
         <div className="flex-1">
           <Textarea
             value={localValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             placeholder="Enter your writing prompt here... (⌘+Enter to generate)"
-            className="min-h-[80px] resize-none border-zinc-300 dark:border-zinc-700 focus-visible:ring-zinc-400"
+            className="min-h-[80px] resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             disabled={isLoading}
             maxLength={maxLength}
           />
         </div>
+
+        {/* Model Selector */}
         {selectedModelId && onModelChange && (
           <ModelSelector
             selectedModelId={selectedModelId}
@@ -84,14 +88,16 @@ export function InputBar({
             disabled={isLoading}
           />
         )}
-        <div className="flex gap-2">
+
+        {/* Button Group */}
+        <div className="flex gap-1">
           {localValue && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="icon"
               onClick={handleClear}
               disabled={isLoading}
-              className="h-[80px] w-[80px] shrink-0"
+              className="h-[80px] w-[80px] shrink-0 hover:bg-zinc-100 dark:hover:bg-zinc-800"
               title="Clear input"
             >
               <X className="h-5 w-5" />
@@ -100,13 +106,15 @@ export function InputBar({
           <Button
             onClick={handleGenerate}
             disabled={!canGenerate}
-            className="h-[80px] w-[80px] shrink-0"
+            className="h-[80px] w-[80px] shrink-0 bg-pink-600 text-white hover:bg-pink-700 disabled:opacity-50"
             title="Generate content"
           >
             <Sparkles className="h-5 w-5" />
           </Button>
         </div>
       </div>
+
+      {/* Character count and keyboard shortcut hint */}
       <div className="flex items-center justify-between text-xs text-zinc-500">
         <p>
           {localValue.length}/{maxLength} characters
