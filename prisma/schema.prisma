@@ -1,0 +1,72 @@
+// Writer AI Database Schema - Prisma ORM
+// PostgreSQL Database Configuration
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// User Model
+// ============================================================================
+
+model User {
+  id                String      @id @default(uuid()) @db.Uuid
+  username          String      @unique
+  passwordHash      String
+  email             String?     @unique
+  aiModelPreference String      @default("deepseek/deepseek-v3.2")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  lastLoginAt       DateTime?
+
+  workspaces        Workspace[]
+
+  @@index([username])
+  @@map("user")
+}
+
+// ============================================================================
+// Workspace Model
+// ============================================================================
+
+model Workspace {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  name             String
+  targetReader     String?   @map("target_reader") @db.Text
+  referenceExample String?   @map("reference_example") @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articles         Article[]
+
+  @@index([userId])
+  @@map("workspace")
+}
+
+// ============================================================================
+// Article Model
+// ============================================================================
+
+model Article {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String    @map("workspace_id") @db.Uuid
+  title       String    @default("Untitled Article")
+  content     String?   @db.Text
+  prompt      String?   @db.Text
+  wordCount   Int       @default(0) @map("word_count")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("article")
+}
