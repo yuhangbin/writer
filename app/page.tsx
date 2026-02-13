@@ -25,7 +25,7 @@ export default function Home() {
     fetchWorkspaces,
     createWorkspace,
     updateWorkspace,
-    deleteWorkspace: deleteWorkspaceApi,
+    deleteWorkspace,
     getWorkspace,
   } = useWorkspaces();
 
@@ -34,7 +34,7 @@ export default function Home() {
     loading: articlesLoading,
     createArticle,
     updateArticle,
-    deleteArticle: deleteArticleApi,
+    deleteArticle,
     fetchArticles,
   } = useArticles();
 
@@ -64,13 +64,6 @@ export default function Home() {
     }
   }, [currentWorkspaceId, fetchArticles]);
 
-  // Select first workspace and article on load
-  useEffect(() => {
-    if (workspaces.length > 0 && !currentWorkspaceId) {
-      setCurrentWorkspaceId(workspaces[0].id);
-    }
-  }, [workspaces, currentWorkspaceId]);
-
   // Select first article when articles load
   useEffect(() => {
     if (articles.length > 0 && !currentArticleId && currentWorkspaceId) {
@@ -81,20 +74,7 @@ export default function Home() {
         setArticleTitle(workspaceArticles[0].title);
       }
     }
-  }, [articles, currentArticleId, currentWorkspaceId]);
-
-  const currentWorkspace = workspaces.find((w) => w.id === currentWorkspaceId);
-  const currentArticle = articles.find((a) => a.id === currentArticleId);
-
-  // Get articles for a workspace
-  const handleGetArticlesForWorkspace = useCallback(
-    (workspaceId: string) => {
-      return articles
-        .filter((a) => a.workspaceId === workspaceId)
-        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    },
-    [articles]
-  );
+    }, [articles, currentArticleId, currentWorkspaceId]);
 
   // Handle workspace selection
   const handleSelectWorkspace = useCallback(
@@ -104,29 +84,21 @@ export default function Home() {
       // Load articles for this workspace
       await fetchArticles(id);
 
-      // Select the first article for this workspace
-      const workspaceArticles = articles.filter((a) => a.workspaceId === id);
+      // Select first article for this workspace
+      const workspaceArticles = articles.filter(a => a.workspaceId === id);
       if (workspaceArticles.length > 0) {
-        const sortedArticles = workspaceArticles.sort(
-          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-        setCurrentArticleId(sortedArticles[0].id);
-        setArticleContent(sortedArticles[0].content || '');
-        setArticleTitle(sortedArticles[0].title);
-      } else {
-        setCurrentArticleId(null);
-        setArticleContent('');
-        setArticleTitle('');
+        setCurrentArticleId(workspaceArticles[0].id);
+        setArticleContent(workspaceArticles[0].content || '');
+        setArticleTitle(workspaceArticles[0].title);
       }
     },
-    [articles, fetchArticles]
+    [currentWorkspaceId]
   );
 
-  // Handle article selection
   const handleSelectArticle = useCallback(
     (id: string) => {
       setCurrentArticleId(id);
-      const article = articles.find((a) => a.id === id);
+      const article = articles.find(a => a.id === id);
       if (article) {
         setArticleContent(article.content || '');
         setArticleTitle(article.title);
@@ -135,7 +107,6 @@ export default function Home() {
     [articles]
   );
 
-  // Handle creating a new workspace
   const handleCreateWorkspace = useCallback(async () => {
     try {
       const workspace = await createWorkspace({
@@ -150,29 +121,11 @@ export default function Home() {
       setSettingsOpen(true);
     } catch (error) {
       console.error('Failed to create workspace:', error);
-    }
-  }, [createWorkspace]);
+      }
+    },
+    [createWorkspace]
+  );
 
-  // Handle creating a new article
-  const handleCreateArticle = useCallback(async () => {
-    if (!currentWorkspaceId) return;
-
-    try {
-      const article = await createArticle({
-        workspaceId: currentWorkspaceId,
-        title: 'Untitled Article',
-        content: '',
-        prompt: '',
-      });
-      setCurrentArticleId(article.id);
-      setArticleContent('');
-      setArticleTitle('Untitled Article');
-    } catch (error) {
-      console.error('Failed to create article:', error);
-    }
-  }, [currentWorkspaceId, createArticle]);
-
-  // Handle updating workspace settings
   const handleSaveWorkspaceSettings = useCallback(
     async (workspace: Workspace) => {
       try {
@@ -185,15 +138,15 @@ export default function Home() {
         console.error('Failed to update workspace:', error);
       }
     },
-    [updateWorkspace]
+    [currentWorkspaceId, updateWorkspace]
   );
 
-  // Handle deleting a workspace
   const handleDeleteWorkspace = useCallback(
     async (id: string) => {
       try {
-        await deleteWorkspaceApi(id);
+        await deleteWorkspace(id);
 
+        // Clear current workspace if deleted
         if (currentWorkspaceId === id) {
           setCurrentWorkspaceId(null);
           setCurrentArticleId(null);
@@ -204,50 +157,16 @@ export default function Home() {
         console.error('Failed to delete workspace:', error);
       }
     },
-    [currentWorkspaceId, deleteWorkspaceApi]
+    [currentWorkspaceId, deleteWorkspace]
   );
 
-  // Handle deleting an article
-  const handleDeleteArticle = useCallback(
-    async (id: string) => {
-      try {
-        await deleteArticleApi(id);
-
-        // If the deleted article was the current one, select another or clear
-        if (currentArticleId === id && currentWorkspaceId) {
-          const workspaceArticles = articles.filter(
-            (a) => a.workspaceId === currentWorkspaceId && a.id !== id
-          );
-          if (workspaceArticles.length > 0) {
-            const sortedArticles = workspaceArticles.sort(
-              (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-            );
-            setCurrentArticleId(sortedArticles[0].id);
-            setArticleContent(sortedArticles[0].content || '');
-            setArticleTitle(sortedArticles[0].title);
-          } else {
-            setCurrentArticleId(null);
-            setArticleContent('');
-            setArticleTitle('');
-          }
-        }
-      } catch (error) {
-        console.error('Failed to delete article:', error);
-      }
-    },
-    [currentArticleId, currentWorkspaceId, articles, deleteArticleApi]
-  );
-
-  // Handle input changes
   const handleInputChange = useCallback((value: string) => {
     setInputValue(value);
   }, []);
 
   // Handle generating content with AI
   const handleGenerate = useCallback(async () => {
-    if (!inputValue.trim() || !currentWorkspaceId) {
-      return;
-    }
+    if (!inputValue.trim() || !currentWorkspaceId) return;
 
     setIsGenerating(true);
 
@@ -270,68 +189,140 @@ export default function Home() {
         throw new Error(errorData.error || 'Generation failed');
       }
 
-      const { content } = await response.json();
-
-      // Create a new article with the generated content
-      const newArticle = await createArticle({
-        workspaceId: currentWorkspaceId,
-        title: generateTitleFromPrompt(inputValue),
-        content,
-        prompt: inputValue,
-      });
-
-      setCurrentArticleId(newArticle.id);
-      setArticleContent(content);
-      setArticleTitle(newArticle.title);
+      const data = await response.json();
+      setArticleContent(data.content || '');
+      setArticleTitle(generateTitleFromPrompt(inputValue));
       setInputValue('');
-      setIsGenerating(false);
     } catch (error) {
-      console.error('Failed to generate article:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to generate content';
-      alert(`Error: ${errorMessage}`);
-      setIsGenerating(false);
-    }
-  }, [inputValue, currentWorkspaceId, selectedModelId, createArticle]);
+        console.error('Failed to generate article:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Generation failed';
+        alert(`Error: ${errorMessage}`);
+      } finally {
+        setIsGenerating(false);
+      }
+    },
+    [inputValue, currentWorkspaceId, selectedModelId, createArticle]
+  );
 
-  // Handle article content changes
   const handleArticleChange = useCallback(
     async (content: string) => {
       setArticleContent(content);
+      if (currentArticleId) {
+        await updateArticle(currentArticleId, { content });
+      }
+    },
+    [currentArticleId, updateArticle]
+  );
 
-      // Auto-save article content
+  const handleTitleChange = useCallback(
+    async (title: string) => {
+      setArticleTitle(title);
+      if (currentArticleId) {
+        await updateArticle(currentArticleId, { title });
+      }
+    },
+    [currentArticleId, updateArticle]
+  );
+
+  // Handle export functionality
+  const handleExport = useCallback((format: ExportFormat) => {
+    if (!articleContent) return;
+
+    let content = articleContent;
+    let filename = `${articleTitle || 'untitled'}`;
+    let mimeType = 'text/plain';
+
+    switch (format) {
+      case 'markdown':
+        filename += '.md';
+        mimeType = 'text/markdown';
+        break;
+      case 'html':
+        filename += '.html';
+        mimeType = 'text/html';
+        break;
+      case 'plain':
+        filename += '.txt';
+        mimeType = 'text/plain';
+        break;
+    }
+
+    // Create blob and download
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [articleContent, articleTitle]);
+
+  // Get articles for a workspace
+  const handleGetArticlesForWorkspace = useCallback(
+    (workspaceId: string) => {
+      return articles.filter(a => a.workspaceId === workspaceId);
+    },
+    [articles]
+  );
+
+  // Create a new article
+  const handleCreateArticle = useCallback(async (workspaceId?: string) => {
+    const targetWorkspaceId = workspaceId || currentWorkspaceId;
+    if (!targetWorkspaceId) return;
+
+    try {
+      const newArticle = await createArticle({
+        workspaceId: targetWorkspaceId,
+        title: 'Untitled Article',
+        content: '',
+      });
+      setCurrentArticleId(newArticle.id);
+      setArticleContent('');
+      setArticleTitle('Untitled Article');
+    } catch (error) {
+      console.error('Failed to create article:', error);
+    }
+  }, [currentWorkspaceId, createArticle]);
+
+  // Delete an article
+  const handleDeleteArticle = useCallback(async (articleId: string) => {
+    try {
+      await deleteArticle(articleId);
+
+      // If deleted article was current one, select another or clear
+      if (currentArticleId === articleId) {
+        const workspaceArticles = articles.filter(a => a.workspaceId === currentWorkspaceId);
+        if (workspaceArticles.length > 0) {
+          setCurrentArticleId(workspaceArticles[0].id);
+          setArticleContent(workspaceArticles[0].content || '');
+          setArticleTitle(workspaceArticles[0].title);
+        } else {
+          setCurrentArticleId(null);
+          setArticleContent('');
+          setArticleTitle('');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to delete article:', error);
+    }
+  }, [currentArticleId, currentWorkspaceId, articles, deleteArticle]);
+
+  // Auto-save article content
+  useEffect(() => {
+    const saveArticle = async () => {
       if (currentArticleId) {
         try {
-          await updateArticle(currentArticleId, { content });
+          await updateArticle(currentArticleId, { content: articleContent });
         } catch (error) {
           console.error('Failed to save article:', error);
         }
       }
-    },
-    [currentArticleId, updateArticle]
-  );
+    };
 
-  // Handle article title changes
-  const handleTitleChange = useCallback(
-    async (title: string) => {
-      setArticleTitle(title);
-
-      // Auto-save article title
-      if (currentArticleId) {
-        try {
-          await updateArticle(currentArticleId, { title });
-        } catch (error) {
-          console.error('Failed to save article title:', error);
-        }
-      }
-    },
-    [currentArticleId, updateArticle]
-  );
-
-  // Handle export (placeholder)
-  const handleExport = useCallback((format: ExportFormat) => {
-    console.log('Exporting as:', format);
-    // The actual export is handled in the ExportDialog component
-  }, []);
+    saveArticle();
+  }, [articleContent, currentArticleId, updateArticle]);
 
   // Show loading state while checking auth
   if (authLoading) {
@@ -365,8 +356,10 @@ export default function Home() {
             currentWorkspaceId={currentWorkspaceId}
             onSelectWorkspace={handleSelectWorkspace}
             onCreateWorkspace={handleCreateWorkspace}
-            onSettingsClick={() => setSettingsOpen(true)}
-            onDeleteWorkspace={handleDeleteWorkspace}
+            onSettingsClick={(workspaceId) => {
+              setCurrentWorkspaceId(workspaceId);
+              setSettingsOpen(true);
+            }}
             getArticlesForWorkspace={handleGetArticlesForWorkspace}
             currentArticleId={currentArticleId}
             onSelectArticle={handleSelectArticle}
@@ -388,10 +381,10 @@ export default function Home() {
           <CreativeZone
             content={articleContent}
             onChange={handleArticleChange}
-            onTitleChange={handleTitleChange}
             onExport={handleExport}
             hasWorkspace={!!currentWorkspaceId}
             articleTitle={articleTitle}
+            onTitleChange={handleTitleChange}
           />
         }
         userProfile={
@@ -401,14 +394,15 @@ export default function Home() {
           />
         }
       />
-
-      {/* Workspace Settings Dialog */}
-      <WorkspaceSettings
-        workspace={currentWorkspace || null}
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        onSave={handleSaveWorkspaceSettings}
-      />
+      {settingsOpen && (
+        <WorkspaceSettings
+          workspace={workspaces.find((w) => w.id === currentWorkspaceId) || null}
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          onSave={handleSaveWorkspaceSettings}
+          onDeleteWorkspace={handleDeleteWorkspace}
+        />
+      )}
     </>
   );
 }
