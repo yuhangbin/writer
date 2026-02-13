@@ -21,7 +21,11 @@ export async function GET(
     const article = await prisma.article.findFirst({
       where: {
         id,
-        workspace: { userId: user.id },
+        workspace: {
+          userId: user.id,
+          isDeleted: false,
+        },
+        isDeleted: false,
       },
       include: {
         workspace: {
@@ -69,7 +73,11 @@ export async function PATCH(
     const existingArticle = await prisma.article.findFirst({
       where: {
         id,
-        workspace: { userId: user.id },
+        workspace: {
+          userId: user.id,
+          isDeleted: false,
+        },
+        isDeleted: false,
       },
     });
 
@@ -113,7 +121,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/articles/[id] - Delete an article
+// DELETE /api/articles/[id] - Soft delete an article
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -133,7 +141,11 @@ export async function DELETE(
     const existingArticle = await prisma.article.findFirst({
       where: {
         id,
-        workspace: { userId: user.id },
+        workspace: {
+          userId: user.id,
+          isDeleted: false,
+        },
+        isDeleted: false,
       },
     });
 
@@ -141,9 +153,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Article not found' }, { status: 404 });
     }
 
-    // Delete article
-    await prisma.article.delete({
+    // Soft delete article
+    await prisma.article.update({
       where: { id },
+      data: { isDeleted: true },
     });
 
     return NextResponse.json({ message: 'Article deleted successfully' });

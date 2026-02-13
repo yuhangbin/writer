@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Writer is an AI-powered writing assistant website (写作AI Agent) that helps users quickly generate articles. It features workspace management for focused context isolation, rich text editing, and article export capabilities.
 
+## CLAUDE.md Maintenance Rules
+
+**Keep updates minimal.** Add exceptions inline. Remove details. One line > three.
+
 ## Development Commands
 
 ```bash
@@ -97,6 +101,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - **Implementation**: Use zinc scale from Tailwind CSS
 - **Dark mode**: Always provide `dark:` variants
 - **Priority**: Prefer CSS variables (`bg-background`, `text-foreground`) over hardcoded colors
+- **Exception**: Red (`bg-red-600`, `text-red-600`) for destructive actions, errors, and warnings only
 
 ## Application Architecture
 

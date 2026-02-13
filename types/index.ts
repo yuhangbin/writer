@@ -6,6 +6,7 @@ export interface Workspace {
   referenceExample: string | null;
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: boolean;
 }
 
 export interface Article {
@@ -17,6 +18,7 @@ export interface Article {
   wordCount: number;
   createdAt: Date;
   updatedAt: Date;
+  isDeleted: boolean;
 }
 
 // AI Provider type - can be extended

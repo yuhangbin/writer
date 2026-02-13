@@ -22,6 +22,7 @@ export async function GET(
       where: {
         id,
         userId: user.id,
+        isDeleted: false,
       },
     });
 
@@ -62,6 +63,7 @@ export async function PATCH(
       where: {
         id,
         userId: user.id,
+        isDeleted: false,
       },
     });
 
@@ -109,7 +111,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/workspaces/[id] - Delete a workspace
+// DELETE /api/workspaces/[id] - Soft delete a workspace
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -130,6 +132,7 @@ export async function DELETE(
       where: {
         id,
         userId: user.id,
+        isDeleted: false,
       },
     });
 
@@ -137,10 +140,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Workspace not found' }, { status: 404 });
     }
 
-    // Delete workspace (cascade will delete associated articles)
-    await prisma.workspace.delete({
-      where: { id },
-    });
+    // Soft delete workspace and cascade to articles
+    await prisma.$transaction([
+      prisma.workspace.update({
+        where: { id },
+        data: { isDeleted: true },
+      }),
+      prisma.article.updateMany({
+        where: { workspaceId: id },
+        data: { isDeleted: true },
+      }),
+    ]);
 
     return NextResponse.json({ message: 'Workspace deleted successfully' });
   } catch (error) {

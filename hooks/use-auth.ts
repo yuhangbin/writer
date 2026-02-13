@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 export interface User {
   id: string;
@@ -20,9 +21,18 @@ export interface UseAuthReturn {
 }
 
 export function useAuth(): UseAuthReturn {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const clearInvalidSession = useCallback(async () => {
+    try {
+      await fetch('/api/auth/clear-session', { method: 'POST' });
+    } catch {
+      // Ignore errors when clearing session
+    }
+  }, []);
 
   const checkAuth = useCallback(async () => {
     try {
@@ -31,18 +41,28 @@ export function useAuth(): UseAuthReturn {
         const data = await response.json();
         setUser(data.user);
       } else {
+        // Token is invalid or expired
         setUser(null);
+        await clearInvalidSession();
       }
     } catch (err) {
       setUser(null);
+      await clearInvalidSession();
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearInvalidSession]);
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  // Redirect to login if not authenticated after loading
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [loading, user, router]);
 
   const login = async (username: string, password: string) => {
     setError(null);
@@ -61,6 +81,8 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(data.user);
+      router.push('/');
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
       setError(message);
@@ -87,6 +109,8 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(data.user);
+      router.push('/');
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Registration failed';
       setError(message);
@@ -109,6 +133,8 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(null);
+      router.push('/login');
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Logout failed';
       setError(message);

@@ -16,8 +16,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const workspaceId = searchParams.get('workspaceId');
 
-    const where: { workspace: { userId: string }; workspaceId?: string } = {
-      workspace: { userId: user.id },
+    const where: {
+      workspace: { userId: string; isDeleted: boolean };
+      workspaceId?: string;
+      isDeleted: boolean;
+    } = {
+      workspace: { userId: user.id, isDeleted: false },
+      isDeleted: false,
     };
 
     if (workspaceId) {
@@ -66,6 +71,7 @@ export async function POST(request: NextRequest) {
       where: {
         id: workspaceId,
         userId: user.id,
+        isDeleted: false,
       },
     });
 
