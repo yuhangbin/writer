@@ -17,7 +17,7 @@ export default function MainLayout({
     <div className="flex h-screen w-full flex-col bg-zinc-50 dark:bg-zinc-950">
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <div className="w-[280px] min-w-[280px] border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="w-[300px] min-w-[300px] bg-white dark:bg-zinc-900">
           {sidebar}
         </div>
 

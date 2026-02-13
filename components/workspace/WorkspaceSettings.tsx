@@ -15,12 +15,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Trash2 } from 'lucide-react';
 
 export function WorkspaceSettings({
   workspace,
   open,
   onOpenChange,
   onSave,
+  onDeleteWorkspace,
 }: WorkspaceSettingsProps) {
   const [name, setName] = useState('');
   const [targetReader, setTargetReader] = useState('');
@@ -110,11 +112,38 @@ export function WorkspaceSettings({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+        {/* Workspace creation info */}
+        {workspace && (
+          <div className="flex items-center justify-start pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <span className="text-xs text-zinc-500">
+              Created {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : 'Unknown'}
+            </span>
+          </div>
+        )}
+
+        <DialogFooter className="flex items-center justify-between">
+          {workspace && onDeleteWorkspace && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="text-xs bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => {
+                if (confirm(`Are you sure you want to delete "${workspace.name}"?`)) {
+                  onDeleteWorkspace(workspace.id);
+                  onOpenChange(false);
+                }
+              }}
+            >
+              <Trash2 className="h-3 w-3 mr-1.5" />
+              Delete Workspace
+            </Button>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>Save Changes</Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

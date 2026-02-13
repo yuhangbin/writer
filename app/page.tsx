@@ -288,21 +288,22 @@ export default function Home() {
 
   // Delete an article
   const handleDeleteArticle = useCallback(async (articleId: string) => {
+    // Immediately clear current article if it's the one being deleted
+    if (currentArticleId === articleId) {
+      setCurrentArticleId(null);
+      setArticleContent('');
+      setArticleTitle('');
+    }
+
     try {
       await deleteArticle(articleId);
 
-      // If deleted article was current one, select another or clear
-      if (currentArticleId === articleId) {
-        const workspaceArticles = articles.filter(a => a.workspaceId === currentWorkspaceId);
-        if (workspaceArticles.length > 0) {
-          setCurrentArticleId(workspaceArticles[0].id);
-          setArticleContent(workspaceArticles[0].content || '');
-          setArticleTitle(workspaceArticles[0].title);
-        } else {
-          setCurrentArticleId(null);
-          setArticleContent('');
-          setArticleTitle('');
-        }
+      // After deletion, select another article if available
+      const workspaceArticles = articles.filter(a => a.workspaceId === currentWorkspaceId && a.id !== articleId);
+      if (workspaceArticles.length > 0) {
+        setCurrentArticleId(workspaceArticles[0].id);
+        setArticleContent(workspaceArticles[0].content || '');
+        setArticleTitle(workspaceArticles[0].title);
       }
     } catch (error) {
       console.error('Failed to delete article:', error);
@@ -312,7 +313,8 @@ export default function Home() {
   // Auto-save article content
   useEffect(() => {
     const saveArticle = async () => {
-      if (currentArticleId) {
+      // Only save if current article still exists in the articles list
+      if (currentArticleId && articles.some(a => a.id === currentArticleId)) {
         try {
           await updateArticle(currentArticleId, { content: articleContent });
         } catch (error) {
@@ -322,7 +324,7 @@ export default function Home() {
     };
 
     saveArticle();
-  }, [articleContent, currentArticleId, updateArticle]);
+  }, [articleContent, currentArticleId, articles, updateArticle]);
 
   // Show loading state while checking auth
   if (authLoading) {

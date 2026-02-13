@@ -13,6 +13,7 @@ export interface WorkspaceSettingsProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (workspace: Workspace) => void;
+  onDeleteWorkspace?: (id: string) => void;
 }
 
 export interface WorkspaceSidebarProps {
@@ -20,11 +21,10 @@ export interface WorkspaceSidebarProps {
   currentWorkspaceId: string | null;
   onSelectWorkspace: (id: string) => void;
   onCreateWorkspace: () => void;
-  onSettingsClick: () => void;
-  onDeleteWorkspace: (id: string) => void;
+  onSettingsClick: (workspaceId: string) => void;
   getArticlesForWorkspace: (workspaceId: string) => Article[];
   currentArticleId: string | null;
   onSelectArticle: (articleId: string) => void;
   onDeleteArticle: (articleId: string) => void;
-  onCreateArticle: () => void;
+  onCreateArticle: (workspaceId: string) => void;
 }
