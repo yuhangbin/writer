@@ -19,4 +19,5 @@ export interface CreativeZoneProps {
   hasWorkspace: boolean;
   articleTitle: string;
   onTitleChange: (title: string) => void;
+  onSave?: () => void;
 }

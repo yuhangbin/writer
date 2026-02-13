@@ -8,6 +8,7 @@ import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
 import { WorkspaceSettings } from '@/components/workspace/WorkspaceSettings';
 import { InputBar } from '@/components/input-bar/InputBar';
 import { CreativeZone } from '@/components/creative-zone/CreativeZone';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import type { ExportFormat, Workspace, Article } from '@/types';
 import { calculateWordCount, generateTitleFromPrompt } from '@/lib/utils';
 import { DEFAULT_MODEL_ID, getModelById } from '@/lib/ai-models';
@@ -310,6 +311,23 @@ export default function Home() {
     }
   }, [currentArticleId, currentWorkspaceId, articles, deleteArticle]);
 
+  // Manual save handler
+  const handleManualSave = useCallback(async () => {
+    if (!currentArticleId) return;
+
+    try {
+      await updateArticle(currentArticleId, {
+        content: articleContent,
+        title: articleTitle,
+      });
+      // Show success feedback
+      alert('Article saved successfully');
+    } catch (error) {
+      console.error('Failed to save article:', error);
+      alert('Failed to save article');
+    }
+  }, [currentArticleId, articleContent, articleTitle, updateArticle]);
+
   // Auto-save article content
   useEffect(() => {
     const saveArticle = async () => {
@@ -350,7 +368,7 @@ export default function Home() {
   }
 
   return (
-    <>
+    <SidebarProvider defaultOpen={true}>
       <MainLayout
         sidebar={
           <WorkspaceSidebar
@@ -387,8 +405,10 @@ export default function Home() {
             hasWorkspace={!!currentWorkspaceId}
             articleTitle={articleTitle}
             onTitleChange={handleTitleChange}
+            onSave={currentArticleId ? handleManualSave : undefined}
           />
         }
+        headerLeft={<SidebarTrigger />}
         userProfile={
           <UserProfileHeader
             user={user}
@@ -405,6 +425,6 @@ export default function Home() {
           onDeleteWorkspace={handleDeleteWorkspace}
         />
       )}
-    </>
+    </SidebarProvider>
   );
 }

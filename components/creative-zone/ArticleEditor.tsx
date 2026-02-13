@@ -117,7 +117,7 @@ export function ArticleEditor({
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center gap-2 border-b border-zinc-100 bg-zinc-50 px-8 py-3 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="flex items-center gap-2 bg-zinc-50 px-8 py-3 dark:bg-zinc-950">
         <HeadingButton
           onClick={() => insertHeading(1)}
           active={editor.isActive('heading', { level: 1 })}

@@ -38,7 +38,7 @@ export function WorkspaceSidebar({
   const isExpanded = (workspaceId: string) => expandedWorkspaceId === workspaceId;
 
   return (
-    <div className="flex h-full flex-col rounded-lg bg-white dark:bg-zinc-900">
+    <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-4">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">

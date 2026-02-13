@@ -6,7 +6,7 @@ import { ArticleEditor } from './ArticleEditor';
 import { ExportDialog } from './ExportDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download } from 'lucide-react';
+import { Download, Save } from 'lucide-react';
 import type { ExportFormat } from '@/types';
 
 export function CreativeZone({
@@ -16,6 +16,7 @@ export function CreativeZone({
   hasWorkspace,
   articleTitle,
   onTitleChange,
+  onSave,
 }: CreativeZoneProps) {
   const [exportOpen, setExportOpen] = useState(false);
 
@@ -38,8 +39,8 @@ export function CreativeZone({
 
   return (
     <div className="flex h-full flex-col rounded-3xl border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
-      {/* Header with Title input and Export button */}
-      <div className="flex items-center justify-between border-b border-zinc-200 px-8 py-5 dark:border-zinc-800">
+      {/* Header with Title input, Save button, and Export button */}
+      <div className="flex items-center justify-between px-8 py-5">
         <Input
           type="text"
           value={articleTitle}
@@ -47,13 +48,24 @@ export function CreativeZone({
           placeholder="Untitled Article"
           className="h-8 max-w-md border-none text-xl font-semibold text-zinc-900 focus-visible:ring-0 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500"
         />
-        <Button
-          onClick={() => setExportOpen(true)}
-          className="ml-6 rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Export
-        </Button>
+        <div className="flex items-center gap-3">
+          {onSave && (
+            <Button
+              onClick={onSave}
+              className="rounded-xl border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Save
+            </Button>
+          )}
+          <Button
+            onClick={() => setExportOpen(true)}
+            className="rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+        </div>
       </div>
 
       {/* Editor */}
