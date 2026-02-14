@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
 import { User, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,36 +18,16 @@ interface UserProfileHeaderProps {
 }
 
 export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Get user initials (first 2 characters, capitalized)
   const getUserInitials = (username: string) => {
     return username.slice(0, 2).toUpperCase();
   };
 
-  // Click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
   // Handle logout
   const handleLogout = async () => {
     try {
       await onLogout();
-      // Redirect to login page will be handled by the auth state change
     } catch (error) {
       console.error('Failed to logout:', error);
     }
@@ -59,8 +38,8 @@ export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
   }
 
   return (
-    <div className="flex items-center" ref={dropdownRef}>
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <div className="flex items-center">
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
