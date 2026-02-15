@@ -48,12 +48,20 @@ export async function generateTextDirect(
     temperature?: number;
     maxTokens?: number;
     topP?: number;
-  } = {}
+  } = {},
+  systemMessage?: string
 ): Promise<{
   text: string;
   usage: { promptTokens: number; completionTokens: number; totalTokens: number };
   finishReason: string;
 }> {
+  const messages: ChatMessage[] = systemMessage
+    ? [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: prompt },
+      ]
+    : [{ role: 'user', content: prompt }];
+
   const response = await fetch(`${BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -62,7 +70,7 @@ export async function generateTextDirect(
     },
     body: JSON.stringify({
       model: modelId,
-      messages: [{ role: 'user', content: prompt }],
+      messages,
       temperature: options.temperature ?? 0.7,
       max_tokens: options.maxTokens ?? 4000,
       top_p: options.topP,
@@ -98,7 +106,8 @@ export async function* streamTextDirect(
     temperature?: number;
     maxTokens?: number;
     topP?: number;
-  } = {}
+  } = {},
+  systemMessage?: string
 ): AsyncGenerator<{
   type: 'text' | 'finish';
   content?: string;
@@ -106,6 +115,13 @@ export async function* streamTextDirect(
   usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
   error?: string;
 }> {
+  const messages: ChatMessage[] = systemMessage
+    ? [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: prompt },
+      ]
+    : [{ role: 'user', content: prompt }];
+
   const response = await fetch(`${BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -114,7 +130,7 @@ export async function* streamTextDirect(
     },
     body: JSON.stringify({
       model: modelId,
-      messages: [{ role: 'user', content: prompt }],
+      messages,
       temperature: options.temperature ?? 0.7,
       max_tokens: options.maxTokens ?? 4000,
       top_p: options.topP,

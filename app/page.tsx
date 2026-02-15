@@ -172,12 +172,19 @@ export default function Home() {
     setIsGenerating(true);
 
     try {
+      // Get current workspace context
+      const currentWorkspace = workspaces.find(w => w.id === currentWorkspaceId);
+
       const response = await fetch('/api/ai/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           modelId: selectedModelId,
           prompt: inputValue,
+          workspaceContext: {
+            targetReader: currentWorkspace?.targetReader,
+            referenceExample: currentWorkspace?.referenceExample,
+          },
           options: {
             temperature: 0.7,
             maxTokens: 4000,
@@ -202,7 +209,7 @@ export default function Home() {
         setIsGenerating(false);
       }
     },
-    [inputValue, currentWorkspaceId, selectedModelId, createArticle]
+    [inputValue, currentWorkspaceId, selectedModelId, workspaces, createArticle]
   );
 
   const handleArticleChange = useCallback(

@@ -1,4 +1,5 @@
 import { generateTextDirect } from './config';
+import { buildPrompt, WorkspaceContext } from './prompt-builder';
 
 export interface GenerateOptions {
   temperature?: number;
@@ -12,13 +13,18 @@ export interface GenerateOptions {
 export async function generateArticle(
   modelId: string,
   prompt: string,
-  options: GenerateOptions = {}
+  options: GenerateOptions = {},
+  workspaceContext?: WorkspaceContext
 ) {
   try {
+    // Build enhanced prompt with workspace context
+    const { system, user: enhancedPrompt } = buildPrompt(prompt, workspaceContext);
+
     const { text, usage, finishReason } = await generateTextDirect(
       modelId,
-      prompt,
-      options
+      enhancedPrompt,
+      options,
+      system  // Pass system message
     );
 
     return {

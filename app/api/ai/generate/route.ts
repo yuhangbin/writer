@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { modelId, prompt, options } = body;
+    const { modelId, prompt, options, workspaceContext } = body;
 
     // Validation
     if (!modelId) {
@@ -24,7 +24,12 @@ export async function POST(request: NextRequest) {
     }
 
     const startTime = Date.now();
-    const result = await generateArticle(modelId, prompt, options);
+    const result = await generateArticle(
+      modelId,
+      prompt,
+      options,
+      workspaceContext  // Pass it through
+    );
     const duration = Date.now() - startTime;
 
     if (!result.success) {
