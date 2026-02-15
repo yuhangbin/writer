@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
+import { MarkdownRenderer } from '@/components/markdown/MarkdownRenderer';
+import { htmlToMarkdown } from '@/lib/utils/html-to-markdown';
 
 const MenuButton = ({
   onClick,
@@ -74,6 +76,7 @@ export function ArticleEditor({
   content,
   onChange,
   placeholder = 'Start writing your article here...',
+  isPreviewMode = false,
 }: ArticleEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
@@ -113,6 +116,28 @@ export function ArticleEditor({
   const insertHeading = (level: 1 | 2 | 3) => {
     editor.chain().focus().toggleHeading({ level }).run();
   };
+
+  // Convert HTML content to markdown for preview
+  const markdownContent = htmlToMarkdown(content);
+
+  // If in preview mode, show markdown renderer
+  if (isPreviewMode) {
+    return (
+      <div className="flex h-full flex-col overflow-hidden">
+        {/* Preview Mode Indicator */}
+        <div className="flex items-center gap-2 bg-zinc-100 px-8 py-2 text-sm text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+          <span className="font-medium">Preview Mode</span>
+          <span className="text-zinc-400">•</span>
+          <span>Markdown rendering enabled</span>
+        </div>
+
+        {/* Markdown Preview */}
+        <div className="flex-1 overflow-y-auto">
+          <MarkdownRenderer content={markdownContent} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">

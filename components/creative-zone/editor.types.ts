@@ -4,6 +4,7 @@ export interface ArticleEditorProps {
   content: string;
   onChange: (content: string) => void;
   placeholder?: string;
+  isPreviewMode?: boolean;
 }
 
 export interface ExportDialogProps {

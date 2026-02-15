@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyPassword, generateToken, setAuthCookie } from '@/lib/auth';
+import { verifyPassword, generateToken } from '@/lib/auth';
+import { cookies } from 'next/headers';
+
+const COOKIE_NAME = 'auth-token';
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,13 +53,23 @@ export async function POST(request: NextRequest) {
       data: { lastLoginAt: new Date() },
     });
 
-    // Generate token and set cookie
+    // Generate token
     const token = generateToken({ userId: user.id, username: user.username });
-    await setAuthCookie(token);
 
-    // Return user without password hash
+    // Create response and set cookie
     const { passwordHash: _, ...userWithoutPassword } = user;
-    return NextResponse.json({ user: userWithoutPassword });
+    const response = NextResponse.json({ user: userWithoutPassword });
+
+    // Set cookie in the response
+    response.cookies.set(COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: request.headers.get('x-forwarded-proto') === 'https',
+      sameSite: 'lax',
+      maxAge: COOKIE_MAX_AGE,
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(

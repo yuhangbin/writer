@@ -62,8 +62,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ workspace }, { status: 201 });
   } catch (error) {
     console.error('Create workspace error:', error);
+
+    // Provide specific error message for debugging
+    const errorMessage = error instanceof Error
+      ? error.message
+      : 'Unknown error occurred';
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

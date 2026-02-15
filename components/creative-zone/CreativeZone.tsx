@@ -6,7 +6,7 @@ import { ArticleEditor } from './ArticleEditor';
 import { ExportDialog } from './ExportDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Download, Save } from 'lucide-react';
+import { Download, Save, Eye, Edit } from 'lucide-react';
 import type { ExportFormat } from '@/types';
 
 export function CreativeZone({
@@ -19,10 +19,15 @@ export function CreativeZone({
   onSave,
 }: CreativeZoneProps) {
   const [exportOpen, setExportOpen] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   const handleExport = (format: ExportFormat) => {
     onExport(format);
     setExportOpen(false);
+  };
+
+  const handleTogglePreview = () => {
+    setIsPreviewMode(!isPreviewMode);
   };
 
   if (!hasWorkspace) {
@@ -49,6 +54,22 @@ export function CreativeZone({
           className="h-8 max-w-md border-none text-xl font-semibold text-zinc-900 focus-visible:ring-0 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500"
         />
         <div className="flex items-center gap-3">
+          <Button
+            onClick={handleTogglePreview}
+            className="rounded-xl border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+          >
+            {isPreviewMode ? (
+              <>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </>
+            ) : (
+              <>
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </>
+            )}
+          </Button>
           {onSave && (
             <Button
               onClick={onSave}
@@ -70,7 +91,11 @@ export function CreativeZone({
 
       {/* Editor */}
       <div className="flex-1 overflow-hidden">
-        <ArticleEditor content={content} onChange={onChange} />
+        <ArticleEditor
+          content={content}
+          onChange={onChange}
+          isPreviewMode={isPreviewMode}
+        />
       </div>
 
       {/* Export Dialog */}
