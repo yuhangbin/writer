@@ -66,7 +66,7 @@ export function WorkspaceSettings({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
           {/* Workspace Name */}
           <div className="space-y-2">
             <Label htmlFor="workspace-name">Workspace Name</Label>
