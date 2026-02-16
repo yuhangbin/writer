@@ -1,6 +1,7 @@
 'use client';
 
-import { User, LogOut, ChevronDown } from 'lucide-react';
+import { LogOut, ChevronDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { LanguageSwitcher } from '@/components/i18n/LanguageSwitcher';
 import type { User as UserType } from '@/hooks/use-auth';
 
 interface UserProfileHeaderProps {
@@ -18,6 +20,7 @@ interface UserProfileHeaderProps {
 }
 
 export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
+  const t = useTranslations('common');
 
   // Get user initials (first 2 characters, capitalized)
   const getUserInitials = (username: string) => {
@@ -38,7 +41,8 @@ export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-2">
+      <LanguageSwitcher />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -77,7 +81,7 @@ export function UserProfileHeader({ user, onLogout }: UserProfileHeaderProps) {
             className="cursor-pointer text-zinc-600 focus:text-zinc-600 dark:text-zinc-400 dark:focus:text-zinc-400"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Logout</span>
+            <span>{t('logout')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -1,0 +1,135 @@
+{
+  "auth": {
+    "login": {
+      "title": "Login",
+      "description": "Welcome back to Writer AI",
+      "username": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "loginButton": "Login",
+      "loggingIn": "Logging in...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Register",
+      "loginFailed": "Login failed"
+    },
+    "register": {
+      "title": "Create Account",
+      "description": "Get started with Writer AI",
+      "username": "Username",
+      "usernamePlaceholder": "Choose a username",
+      "email": "Email (optional)",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "registerButton": "Create Account",
+      "creatingAccount": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Login",
+      "registrationFailed": "Registration failed",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters"
+    }
+  },
+  "workspace": {
+    "sidebar": {
+      "title": "Workspaces",
+      "createTooltip": "Create new workspace",
+      "settingsTooltip": "Workspace settings",
+      "createArticleTooltip": "Create new article",
+      "noWorkspaces": "No workspaces yet",
+      "createFirstWorkspace": "Create your first workspace"
+    },
+    "settings": {
+      "title": "Workspace Settings",
+      "description": "Configure your workspace settings to help the AI understand your target audience and writing style.",
+      "name": "Workspace Name",
+      "namePlaceholder": "My Tech Blog",
+      "targetReader": "Target Reader",
+      "targetReaderPlaceholder": "Describe your target audience... e.g., Software engineers interested in web development",
+      "targetReaderLimit": "{count}/500 characters",
+      "referenceExample": "Reference Example",
+      "referenceExamplePlaceholder": "Provide an example of your writing style or a reference article...",
+      "referenceExampleLimit": "{count}/2000 characters",
+      "createdLabel": "Created {date}",
+      "createdUnknown": "Unknown",
+      "deleteButton": "Delete Workspace",
+      "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+      "cancelButton": "Cancel",
+      "saveButton": "Save Changes",
+      "untitledWorkspace": "Untitled Workspace"
+    },
+    "articles": {
+      "noArticles": "No articles yet",
+      "untitled": "Untitled",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this article?",
+      "moreOptions": "More options"
+    },
+    "create": {
+      "newWorkspace": "New Workspace"
+    }
+  },
+  "editor": {
+    "inputBar": {
+      "placeholder": "What would you like to write? (⌘+Enter)",
+      "generateTooltip": "Generate (⌘+Enter)",
+      "keyboardShortcut": "Press ⌘+Enter to generate"
+    },
+    "creativeZone": {
+      "selectWorkspace": "Select or create a workspace to start writing",
+      "titlePlaceholder": "Untitled Article",
+      "previewButton": "Preview",
+      "editButton": "Edit",
+      "saveButton": "Save",
+      "exportButton": "Export"
+    },
+    "export": {
+      "title": "Export Article",
+      "description": "Choose a format to export your article. Copy to clipboard or download as a file.",
+      "markdown": "Markdown",
+      "html": "HTML",
+      "plainText": "Plain Text",
+      "copyButton": "Copy to Clipboard",
+      "copiedButton": "Copied!",
+      "downloadButton": "Download",
+      "filename": "article"
+    },
+    "article": {
+      "untitled": "Untitled Article"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "loadingWorkspaces": "Loading workspaces...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "logout": "Logout"
+  },
+  "alerts": {
+    "articleSaved": "Article saved successfully",
+    "saveFailed": "Failed to save article",
+    "error": "Error: {message}"
+  },
+  "time": {
+    "justNow": "just now",
+    "minutesAgo": "{count} min ago",
+    "minutesAgoPlural": "{count} mins ago",
+    "hoursAgo": "{count} hour ago",
+    "hoursAgoPlural": "{count} hours ago",
+    "daysAgo": "{count} day ago",
+    "daysAgoPlural": "{count} days ago",
+    "weeksAgo": "{count} week ago",
+    "weeksAgoPlural": "{count} weeks ago"
+  },
+  "language": {
+    "switcher": "Language",
+    "en": "English",
+    "zh": "中文"
+  }
+}

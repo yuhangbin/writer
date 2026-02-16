@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import type { ExportDialogProps } from './editor.types';
 import type { ExportFormat } from '@/types';
 import {
@@ -21,32 +22,11 @@ export function ExportDialog({
   onOpenChange,
   content,
 }: ExportDialogProps) {
+  const t = useTranslations('editor.export');
   const [activeFormat, setActiveFormat] = useState<ExportFormat>('markdown');
   const [copied, setCopied] = useState(false);
 
-  const convertContent = useCallback(
-    (format: ExportFormat): string => {
-      if (!content) return '';
-
-      switch (format) {
-        case 'html':
-          return content;
-        case 'plain':
-          // Strip HTML tags for plain text
-          const tmp = document.createElement('div');
-          tmp.innerHTML = content;
-          return tmp.textContent || tmp.innerText || '';
-        case 'markdown':
-          // Convert HTML to basic Markdown
-          return htmlToMarkdown(content);
-        default:
-          return content;
-      }
-    },
-    [content]
-  );
-
-  const htmlToMarkdown = (html: string): string => {
+  const htmlToMarkdown = useCallback((html: string): string => {
     let markdown = html;
 
     // Convert headers
@@ -88,7 +68,29 @@ export function ExportDialog({
     markdown = markdown.replace(/\n{3,}/g, '\n\n');
 
     return markdown.trim();
-  };
+  }, []);
+
+  const convertContent = useCallback(
+    (format: ExportFormat): string => {
+      if (!content) return '';
+
+      switch (format) {
+        case 'html':
+          return content;
+        case 'plain':
+          // Strip HTML tags for plain text
+          const tmp = document.createElement('div');
+          tmp.innerHTML = content;
+          return tmp.textContent || tmp.innerText || '';
+        case 'markdown':
+          // Convert HTML to basic Markdown
+          return htmlToMarkdown(content);
+        default:
+          return content;
+      }
+    },
+    [content, htmlToMarkdown]
+  );
 
   const getExportContent = useCallback(() => {
     return convertContent(activeFormat);
@@ -113,12 +115,12 @@ export function ExportDialog({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `article.${extensions[activeFormat]}`;
+    a.download = `${t('filename')}.${extensions[activeFormat]}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [getExportContent, activeFormat]);
+  }, [getExportContent, activeFormat, t]);
 
   // Reset copied state when dialog opens
   useEffect(() => {
@@ -131,10 +133,9 @@ export function ExportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Export Article</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Choose a format to export your article. Copy to clipboard or download
-            as a file.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -144,9 +145,9 @@ export function ExportDialog({
           className="w-full"
         >
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="markdown">Markdown</TabsTrigger>
-            <TabsTrigger value="html">HTML</TabsTrigger>
-            <TabsTrigger value="plain">Plain Text</TabsTrigger>
+            <TabsTrigger value="markdown">{t('markdown')}</TabsTrigger>
+            <TabsTrigger value="html">{t('html')}</TabsTrigger>
+            <TabsTrigger value="plain">{t('plainText')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeFormat} className="mt-4">
@@ -163,18 +164,18 @@ export function ExportDialog({
             {copied ? (
               <>
                 <Check className="mr-2 h-4 w-4" />
-                Copied!
+                {t('copiedButton')}
               </>
             ) : (
               <>
                 <Copy className="mr-2 h-4 w-4" />
-                Copy to Clipboard
+                {t('copyButton')}
               </>
             )}
           </Button>
           <Button onClick={handleDownload}>
             <Download className="mr-2 h-4 w-4" />
-            Download
+            {t('downloadButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

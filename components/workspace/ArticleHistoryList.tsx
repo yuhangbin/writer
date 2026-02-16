@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import type { Article } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText, MoreHorizontal, Trash2 } from 'lucide-react';
@@ -20,13 +21,14 @@ export function ArticleHistoryList({
   onSelectArticle,
   onDeleteArticle,
 }: ArticleHistoryListProps) {
+  const t = useTranslations('workspace.articles');
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{ top: number; left: number } | null>(null);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleDelete = (articleId: string) => {
-    if (confirm('Are you sure you want to delete this article?')) {
+    if (confirm(t('deleteConfirm'))) {
       onDeleteArticle(articleId);
       setOpenDropdownId(null);
       setDropdownPosition(null);
@@ -88,7 +90,7 @@ export function ArticleHistoryList({
         {articles.length === 0 ? (
           <div className="py-6 px-3 text-center">
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              No articles yet
+              {t('noArticles')}
             </p>
           </div>
         ) : (
@@ -109,7 +111,7 @@ export function ArticleHistoryList({
                       ? 'text-zinc-900 dark:text-zinc-50'
                       : 'text-zinc-900 dark:text-zinc-50'
                   )}>
-                    {article.title || 'Untitled'}
+                    {article.title || t('untitled')}
                   </span>
                 </button>
 
@@ -121,8 +123,8 @@ export function ArticleHistoryList({
                     e.stopPropagation();
                     openDropdown(article.id);
                   }}
-                  title="More options"
-                  aria-label="More options"
+                  title={t('moreOptions')}
+                  aria-label={t('moreOptions')}
                 >
                   <MoreHorizontal className="h-4 w-4 text-zinc-400" />
                 </button>
@@ -147,7 +149,7 @@ export function ArticleHistoryList({
             onClick={() => handleDelete(openDropdownId)}
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Delete</span>
+            <span>{t('delete')}</span>
           </button>
         </div>,
         document.body

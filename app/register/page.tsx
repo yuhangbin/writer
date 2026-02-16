@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const t = useTranslations('auth.register');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,12 +22,12 @@ export default function RegisterPage() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('passwordsDoNotMatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('passwordTooShort'));
       return;
     }
 
@@ -41,13 +43,13 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        throw new Error(data.error || t('registrationFailed'));
       }
 
       router.push('/');
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -57,8 +59,8 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Create Account</CardTitle>
-          <CardDescription>Get started with Writer AI</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -69,7 +71,7 @@ export default function RegisterPage() {
             )}
             <div className="space-y-2">
               <label htmlFor="username" className="text-sm font-medium">
-                Username
+                {t('username')}
               </label>
               <input
                 id="username"
@@ -80,12 +82,12 @@ export default function RegisterPage() {
                 minLength={3}
                 maxLength={50}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Choose a username"
+                placeholder={t('usernamePlaceholder')}
               />
             </div>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
-                Email (optional)
+                {t('email')}
               </label>
               <input
                 id="email"
@@ -93,12 +95,12 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Enter your email"
+                placeholder={t('emailPlaceholder')}
               />
             </div>
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium">
-                Password
+                {t('password')}
               </label>
               <input
                 id="password"
@@ -108,12 +110,12 @@ export default function RegisterPage() {
                 required
                 minLength={6}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Create a password"
+                placeholder={t('passwordPlaceholder')}
               />
             </div>
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirm Password
+                {t('confirmPassword')}
               </label>
               <input
                 id="confirmPassword"
@@ -122,16 +124,16 @@ export default function RegisterPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="Confirm your password"
+                placeholder={t('confirmPasswordPlaceholder')}
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? t('creatingAccount') : t('registerButton')}
             </Button>
             <div className="text-sm text-center text-muted-foreground">
-              Already have an account?{' '}
+              {t('hasAccount')}{' '}
               <Link href="/login" className="text-primary hover:underline">
-                Login
+                {t('loginLink')}
               </Link>
             </div>
           </form>

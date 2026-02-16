@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { CreativeZoneProps } from './editor.types';
 import { ArticleEditor } from './ArticleEditor';
 import { ExportDialog } from './ExportDialog';
@@ -18,6 +19,7 @@ export function CreativeZone({
   onTitleChange,
   onSave,
 }: CreativeZoneProps) {
+  const t = useTranslations('editor.creativeZone');
   const [exportOpen, setExportOpen] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
@@ -35,7 +37,7 @@ export function CreativeZone({
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <p className="text-lg text-zinc-600 dark:text-zinc-400">
-            Select or create a workspace to start writing
+            {t('selectWorkspace')}
           </p>
         </div>
       </div>
@@ -50,7 +52,7 @@ export function CreativeZone({
           type="text"
           value={articleTitle}
           onChange={(e) => onTitleChange(e.target.value)}
-          placeholder="Untitled Article"
+          placeholder={t('titlePlaceholder')}
           className="h-8 max-w-md border-none text-xl font-semibold text-zinc-900 focus-visible:ring-0 dark:bg-zinc-900 dark:text-zinc-50 dark:placeholder:text-zinc-500"
         />
         <div className="flex items-center gap-3">
@@ -61,12 +63,12 @@ export function CreativeZone({
             {isPreviewMode ? (
               <>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit
+                {t('editButton')}
               </>
             ) : (
               <>
                 <Eye className="mr-2 h-4 w-4" />
-                Preview
+                {t('previewButton')}
               </>
             )}
           </Button>
@@ -76,7 +78,7 @@ export function CreativeZone({
               className="rounded-xl border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
             >
               <Save className="mr-2 h-4 w-4" />
-              Save
+              {t('saveButton')}
             </Button>
           )}
           <Button
@@ -84,7 +86,7 @@ export function CreativeZone({
             className="rounded-xl bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             <Download className="mr-2 h-4 w-4" />
-            Export
+            {t('exportButton')}
           </Button>
         </div>
       </div>

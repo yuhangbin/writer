@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles } from 'lucide-react';
@@ -27,6 +28,7 @@ export function InputBar({
   selectedModelId,
   onModelChange,
 }: InputBarProps) {
+  const t = useTranslations('editor.inputBar');
   const [localValue, setLocalValue] = useState(value);
 
   const handleChange = useCallback(
@@ -67,7 +69,7 @@ export function InputBar({
           value={localValue}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="What would you like to write? (⌘+Enter)"
+          placeholder={t('placeholder')}
           className="flex-1 min-h-[60px] max-h-[200px] p-2 resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent shadow-none"
           disabled={isLoading}
           maxLength={maxLength}
@@ -87,14 +89,14 @@ export function InputBar({
           onClick={handleGenerate}
           disabled={!canGenerate}
           className="px-5 py-2.5 rounded-lg bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200 transition-colors"
-          title="Generate (⌘+Enter)"
+          title={t('generateTooltip')}
         >
           <Sparkles className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Keyboard shortcut hint */}
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">Press ⌘+Enter to generate</p>
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">{t('keyboardShortcut')}</p>
     </div>
   );
 }

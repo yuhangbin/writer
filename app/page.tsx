@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import MainLayout from '@/components/layout/MainLayout';
 import { UserProfileHeader } from '@/components/layout/UserProfileHeader';
 import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar';
@@ -47,6 +48,10 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID);
+  const t = useTranslations('alerts');
+  const tCommon = useTranslations('common');
+  const tWorkspace = useTranslations('workspace.create');
+  const tEditor = useTranslations('editor.article');
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -111,7 +116,7 @@ export default function Home() {
   const handleCreateWorkspace = useCallback(async () => {
     try {
       const workspace = await createWorkspace({
-        name: 'New Workspace',
+        name: tWorkspace('newWorkspace'),
         targetReader: '',
         referenceExample: '',
       });
@@ -204,7 +209,7 @@ export default function Home() {
     } catch (error) {
         console.error('Failed to generate article:', error);
         const errorMessage = error instanceof Error ? error.message : 'Generation failed';
-        alert(`Error: ${errorMessage}`);
+        alert(t('error', { message: errorMessage }));
       } finally {
         setIsGenerating(false);
       }
@@ -236,7 +241,7 @@ export default function Home() {
   const handleExport = useCallback((format: ExportFormat) => {
     if (!articleContent) return;
 
-    let content = articleContent;
+    const content = articleContent;
     let filename = `${articleTitle || 'untitled'}`;
     let mimeType = 'text/plain';
 
@@ -283,12 +288,12 @@ export default function Home() {
     try {
       const newArticle = await createArticle({
         workspaceId: targetWorkspaceId,
-        title: 'Untitled Article',
+        title: tEditor('untitled'),
         content: '',
       });
       setCurrentArticleId(newArticle.id);
       setArticleContent('');
-      setArticleTitle('Untitled Article');
+      setArticleTitle(tEditor('untitled'));
     } catch (error) {
       console.error('Failed to create article:', error);
     }
@@ -328,10 +333,10 @@ export default function Home() {
         title: articleTitle,
       });
       // Show success feedback
-      alert('Article saved successfully');
+      alert(t('articleSaved'));
     } catch (error) {
       console.error('Failed to save article:', error);
-      alert('Failed to save article');
+      alert(t('saveFailed'));
     }
   }, [currentArticleId, articleContent, articleTitle, updateArticle]);
 
@@ -355,7 +360,7 @@ export default function Home() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <div className="text-muted-foreground">{tCommon('loading')}</div>
       </div>
     );
   }
@@ -369,7 +374,7 @@ export default function Home() {
   if (workspacesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-muted-foreground">Loading workspaces...</div>
+        <div className="text-muted-foreground">{tCommon('loadingWorkspaces')}</div>
       </div>
     );
   }

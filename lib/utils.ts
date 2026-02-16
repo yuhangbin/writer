@@ -19,23 +19,25 @@ export function generateTitleFromPrompt(prompt: string): string {
   return trimmed.slice(0, 50) + '...';
 }
 
-export function formatRelativeTime(timestamp: Date | number): string {
+export function formatRelativeTime(timestamp: Date | number, locale: string = 'en'): string {
   const time = timestamp instanceof Date ? timestamp.getTime() : timestamp;
   const seconds = Math.floor((Date.now() - time) / 1000);
 
-  if (seconds < 60) return 'just now';
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+  if (seconds < 60) return locale === 'zh' ? '刚刚' : 'just now';
   if (seconds < 3600) {
     const minutes = Math.floor(seconds / 60);
-    return `${minutes} ${minutes === 1 ? 'min' : 'mins'} ago`;
+    return rtf.format(-minutes, 'minute');
   }
   if (seconds < 86400) {
     const hours = Math.floor(seconds / 3600);
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+    return rtf.format(-hours, 'hour');
   }
   if (seconds < 604800) {
     const days = Math.floor(seconds / 86400);
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    return rtf.format(-days, 'day');
   }
   const weeks = Math.floor(seconds / 604800);
-  return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+  return rtf.format(-weeks, 'week');
 }

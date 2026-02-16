@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Workspace } from '@/types';
 import type { WorkspaceSidebarProps } from './workspace.types';
 import { ArticleHistoryList } from './ArticleHistoryList';
@@ -21,6 +22,7 @@ export function WorkspaceSidebar({
   onDeleteArticle,
   onCreateArticle,
 }: WorkspaceSidebarProps) {
+  const t = useTranslations('workspace.sidebar');
   const [expandedWorkspaceId, setExpandedWorkspaceId] = useState<string | null>(null);
 
   const handleWorkspaceClick = useCallback(
@@ -42,14 +44,14 @@ export function WorkspaceSidebar({
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-4">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
-          Workspaces
+          {t('title')}
         </h2>
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8 rounded-full bg-zinc-900 text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           onClick={onCreateWorkspace}
-          title="Create new workspace"
+          title={t('createTooltip')}
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -61,14 +63,14 @@ export function WorkspaceSidebar({
           {workspaces.length === 0 ? (
             <div className="py-8 text-center">
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                No workspaces yet
+                {t('noWorkspaces')}
               </p>
               <Button
                 variant="link"
                 className="mt-2 h-auto p-0 text-sm"
                 onClick={onCreateWorkspace}
               >
-                Create your first workspace
+                {t('createFirstWorkspace')}
               </Button>
             </div>
           ) : (
@@ -103,7 +105,7 @@ export function WorkspaceSidebar({
                             e.stopPropagation();
                             onSettingsClick(workspace.id);
                           }}
-                          title="Workspace settings"
+                          title={t('settingsTooltip')}
                         >
                           <Settings className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                         </Button>
@@ -115,7 +117,7 @@ export function WorkspaceSidebar({
                             e.stopPropagation();
                             onCreateArticle(workspace.id);
                           }}
-                          title="Create new article"
+                          title={t('createArticleTooltip')}
                         >
                           <Plus className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                         </Button>

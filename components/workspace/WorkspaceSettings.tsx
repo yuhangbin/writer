@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Workspace } from '@/types';
 import type { WorkspaceSettingsProps } from './workspace.types';
 import {
@@ -24,6 +25,7 @@ export function WorkspaceSettings({
   onSave,
   onDeleteWorkspace,
 }: WorkspaceSettingsProps) {
+  const t = useTranslations('workspace.settings');
   const [name, setName] = useState('');
   const [targetReader, setTargetReader] = useState('');
   const [referenceExample, setReferenceExample] = useState('');
@@ -41,7 +43,7 @@ export function WorkspaceSettings({
 
     const updatedWorkspace: Workspace = {
       ...workspace,
-      name: name.trim() || 'Untitled Workspace',
+      name: name.trim() || t('untitledWorkspace'),
       targetReader: targetReader.trim() || null,
       referenceExample: referenceExample.trim() || null,
       updatedAt: new Date(),
@@ -59,55 +61,54 @@ export function WorkspaceSettings({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Workspace Settings</DialogTitle>
+          <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            Configure your workspace settings to help the AI understand your
-            target audience and writing style.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
           {/* Workspace Name */}
           <div className="space-y-2">
-            <Label htmlFor="workspace-name">Workspace Name</Label>
+            <Label htmlFor="workspace-name">{t('name')}</Label>
             <Input
               id="workspace-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="My Tech Blog"
+              placeholder={t('namePlaceholder')}
               maxLength={100}
             />
           </div>
 
           {/* Target Reader */}
           <div className="space-y-2">
-            <Label htmlFor="target-reader">Target Reader</Label>
+            <Label htmlFor="target-reader">{t('targetReader')}</Label>
             <Textarea
               id="target-reader"
               value={targetReader}
               onChange={(e) => setTargetReader(e.target.value)}
-              placeholder="Describe your target audience... e.g., Software engineers interested in web development"
+              placeholder={t('targetReaderPlaceholder')}
               rows={3}
               maxLength={500}
             />
             <p className="text-xs text-zinc-500">
-              {targetReader.length}/500 characters
+              {t('targetReaderLimit', { count: targetReader.length })}
             </p>
           </div>
 
           {/* Reference Example */}
           <div className="space-y-2">
-            <Label htmlFor="reference-example">Reference Example</Label>
+            <Label htmlFor="reference-example">{t('referenceExample')}</Label>
             <Textarea
               id="reference-example"
               value={referenceExample}
               onChange={(e) => setReferenceExample(e.target.value)}
-              placeholder="Provide an example of your writing style or a reference article..."
+              placeholder={t('referenceExamplePlaceholder')}
               rows={5}
               maxLength={2000}
             />
             <p className="text-xs text-zinc-500">
-              {referenceExample.length}/2000 characters
+              {t('referenceExampleLimit', { count: referenceExample.length })}
             </p>
           </div>
         </div>
@@ -116,7 +117,11 @@ export function WorkspaceSettings({
         {workspace && (
           <div className="flex items-center justify-start pt-4 mt-4 border-t border-zinc-200 dark:border-zinc-800">
             <span className="text-xs text-zinc-500">
-              Created {workspace.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : 'Unknown'}
+              {t('createdLabel', {
+                date: workspace.createdAt
+                  ? new Date(workspace.createdAt).toLocaleDateString()
+                  : t('createdUnknown')
+              })}
             </span>
           </div>
         )}
@@ -128,21 +133,21 @@ export function WorkspaceSettings({
               size="sm"
               className="text-xs bg-red-600 hover:bg-red-700 text-white"
               onClick={() => {
-                if (confirm(`Are you sure you want to delete "${workspace.name}"?`)) {
+                if (confirm(t('deleteConfirm', { name: workspace.name }))) {
                   onDeleteWorkspace(workspace.id);
                   onOpenChange(false);
                 }
               }}
             >
               <Trash2 className="h-3 w-3 mr-1.5" />
-              Delete Workspace
+              {t('deleteButton')}
             </Button>
           )}
           <div className="flex gap-2 ml-auto">
             <Button variant="outline" onClick={handleCancel}>
-              Cancel
+              {t('cancelButton')}
             </Button>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button onClick={handleSave}>{t('saveButton')}</Button>
           </div>
         </DialogFooter>
       </DialogContent>

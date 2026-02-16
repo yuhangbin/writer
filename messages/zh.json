@@ -1,0 +1,135 @@
+{
+  "auth": {
+    "login": {
+      "title": "登录",
+      "description": "欢迎回到 Writer AI",
+      "username": "用户名",
+      "usernamePlaceholder": "请输入用户名",
+      "password": "密码",
+      "passwordPlaceholder": "请输入密码",
+      "loginButton": "登录",
+      "loggingIn": "登录中...",
+      "noAccount": "还没有账号?",
+      "registerLink": "注册",
+      "loginFailed": "登录失败"
+    },
+    "register": {
+      "title": "创建账号",
+      "description": "开始使用 Writer AI",
+      "username": "用户名",
+      "usernamePlaceholder": "选择一个用户名",
+      "email": "邮箱（可选）",
+      "emailPlaceholder": "请输入邮箱",
+      "password": "密码",
+      "passwordPlaceholder": "创建密码",
+      "confirmPassword": "确认密码",
+      "confirmPasswordPlaceholder": "请再次输入密码",
+      "registerButton": "创建账号",
+      "creatingAccount": "创建账号中...",
+      "hasAccount": "已有账号?",
+      "loginLink": "登录",
+      "registrationFailed": "注册失败",
+      "passwordsDoNotMatch": "两次输入的密码不一致",
+      "passwordTooShort": "密码至少需要 6 个字符"
+    }
+  },
+  "workspace": {
+    "sidebar": {
+      "title": "工作空间",
+      "createTooltip": "创建新工作空间",
+      "settingsTooltip": "工作空间设置",
+      "createArticleTooltip": "创建新文章",
+      "noWorkspaces": "还没有工作空间",
+      "createFirstWorkspace": "创建你的第一个工作空间"
+    },
+    "settings": {
+      "title": "工作空间设置",
+      "description": "配置工作空间设置，帮助 AI 了解你的目标受众和写作风格。",
+      "name": "工作空间名称",
+      "namePlaceholder": "我的技术博客",
+      "targetReader": "目标读者",
+      "targetReaderPlaceholder": "描述你的目标受众... 例如：对 Web 开发感兴趣的软件工程师",
+      "targetReaderLimit": "{count}/500 字符",
+      "referenceExample": "参考示例",
+      "referenceExamplePlaceholder": "提供你的写作风格示例或参考文章...",
+      "referenceExampleLimit": "{count}/2000 字符",
+      "createdLabel": "创建于 {date}",
+      "createdUnknown": "未知",
+      "deleteButton": "删除工作空间",
+      "deleteConfirm": "确定要删除 \"{name}\" 吗?",
+      "cancelButton": "取消",
+      "saveButton": "保存更改",
+      "untitledWorkspace": "未命名工作空间"
+    },
+    "articles": {
+      "noArticles": "还没有文章",
+      "untitled": "未命名",
+      "delete": "删除",
+      "deleteConfirm": "确定要删除这篇文章吗?",
+      "moreOptions": "更多选项"
+    },
+    "create": {
+      "newWorkspace": "新工作空间"
+    }
+  },
+  "editor": {
+    "inputBar": {
+      "placeholder": "你想写什么？(⌘+Enter)",
+      "generateTooltip": "生成 (⌘+Enter)",
+      "keyboardShortcut": "按 ⌘+Enter 生成"
+    },
+    "creativeZone": {
+      "selectWorkspace": "选择或创建工作空间以开始写作",
+      "titlePlaceholder": "未命名文章",
+      "previewButton": "预览",
+      "editButton": "编辑",
+      "saveButton": "保存",
+      "exportButton": "导出"
+    },
+    "export": {
+      "title": "导出文章",
+      "description": "选择导出格式。复制到剪贴板或下载为文件。",
+      "markdown": "Markdown",
+      "html": "HTML",
+      "plainText": "纯文本",
+      "copyButton": "复制到剪贴板",
+      "copiedButton": "已复制!",
+      "downloadButton": "下载",
+      "filename": "article"
+    },
+    "article": {
+      "untitled": "未命名文章"
+    }
+  },
+  "common": {
+    "loading": "加载中...",
+    "loadingWorkspaces": "加载工作空间中...",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "logout": "退出登录"
+  },
+  "alerts": {
+    "articleSaved": "文章保存成功",
+    "saveFailed": "保存文章失败",
+    "error": "错误：{message}"
+  },
+  "time": {
+    "justNow": "刚刚",
+    "minutesAgo": "{count} 分钟前",
+    "minutesAgoPlural": "{count} 分钟前",
+    "hoursAgo": "{count} 小时前",
+    "hoursAgoPlural": "{count} 小时前",
+    "daysAgo": "{count} 天前",
+    "daysAgoPlural": "{count} 天前",
+    "weeksAgo": "{count} 周前",
+    "weeksAgoPlural": "{count} 周前"
+  },
+  "language": {
+    "switcher": "语言",
+    "en": "English",
+    "zh": "中文"
+  }
+}

@@ -1,9 +1,39 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import type { Locale } from '@/lib/i18n';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('auth-token')?.value;
+
+  // Handle locale detection
+  let locale: Locale = 'en';
+
+  // Check if locale cookie exists
+  const localeCookie = request.cookies.get('locale')?.value as Locale | undefined;
+  if (localeCookie && (localeCookie === 'en' || localeCookie === 'zh')) {
+    locale = localeCookie;
+  } else {
+    // Fallback to Accept-Language header for new users
+    const acceptLanguage = request.headers.get('Accept-Language');
+    if (acceptLanguage) {
+      const preferredLocale = acceptLanguage
+        .split(',')[0]
+        .split('-')[0]
+        .toLowerCase();
+      if (preferredLocale === 'zh') {
+        locale = 'zh';
+      }
+    }
+
+    // Set the locale cookie for future requests
+    const response = NextResponse.next();
+    response.cookies.set('locale', locale, {
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+      sameSite: 'lax',
+    });
+    return response;
+  }
 
   // Protect the root path - redirect to login if not authenticated
   if (pathname === '/' && !token) {
