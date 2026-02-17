@@ -44,35 +44,26 @@ jobs:
           cp -r lib/generated deploy/lib/
           cd deploy && tar -czf ../deploy.tar.gz .
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
       - name: Copy deployment package to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy.tar.gz,.github/scripts/deploy.sh"
-          target: "/tmp"
-          strip_components: 0
+        run: |
+          scp -P ${{ secrets.SSH_PORT || 22 }} \
+            deploy.tar.gz \
+            .github/scripts/deploy.sh \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}:/tmp/
 
       - name: Deploy to VPS via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script_stop: true
-          envs: DEPLOY_PATH,DATABASE_URL,UNIFIED_API_BASE_URL,UNIFIED_API_KEY
-          script: |
-            # Set environment variables
-            export DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
-            export DATABASE_URL="${{ secrets.DATABASE_URL }}"
-            export UNIFIED_API_BASE_URL="${{ secrets.UNIFIED_API_BASE_URL }}"
-            export UNIFIED_API_KEY="${{ secrets.UNIFIED_API_KEY }}"
-
-            # Make deploy script executable
-            chmod +x /tmp/deploy.sh
-
-            # Run deployment script
-            /tmp/deploy.sh
+        run: |
+          ssh -p ${{ secrets.SSH_PORT || 22 }} \
+            ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} \
+            "export DEPLOY_PATH='${{ secrets.DEPLOY_PATH }}' && \
+             export DATABASE_URL='${{ secrets.DATABASE_URL }}' && \
+             export UNIFIED_API_BASE_URL='${{ secrets.UNIFIED_API_BASE_URL }}' && \
+             export UNIFIED_API_KEY='${{ secrets.UNIFIED_API_KEY }}' && \
+             chmod +x /tmp/deploy.sh && /tmp/deploy.sh"
