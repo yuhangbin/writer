@@ -36,12 +36,17 @@ jobs:
       - name: Create deployment package
         run: |
           mkdir -p deploy
-          cp -r .next/standalone/* deploy/
+          # Copy standalone build contents
+          rsync -av .next/standalone/ deploy/ --exclude=node_modules
+          # Copy static assets
+          mkdir -p deploy/.next
           cp -r .next/static deploy/.next/
+          # Copy other necessary files
           cp -r public deploy/
           cp package.json deploy/
           cp next.config.ts deploy/
           cp -r lib/generated deploy/lib/
+          # Create tarball
           cd deploy && tar -czf ../deploy.tar.gz .
 
       - name: Setup SSH key
