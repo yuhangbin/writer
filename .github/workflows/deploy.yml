@@ -36,8 +36,8 @@ jobs:
       - name: Create deployment package
         run: |
           mkdir -p deploy
-          # Copy standalone build contents
-          rsync -av .next/standalone/ deploy/ --exclude=node_modules
+          # Copy standalone build contents (including node_modules)
+          rsync -av .next/standalone/ deploy/
           # Copy static assets
           mkdir -p deploy/.next
           cp -r .next/static deploy/.next/
