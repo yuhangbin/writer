@@ -49,9 +49,10 @@ export function WorkspaceSidebar({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 rounded-full bg-zinc-900 text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="h-9 w-9 rounded-full bg-zinc-900 text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200"
           onClick={onCreateWorkspace}
           title={t('createTooltip')}
+          aria-label={t('createTooltip')}
         >
           <Plus className="h-4 w-4" />
         </Button>
@@ -100,24 +101,26 @@ export function WorkspaceSidebar({
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                          className="h-8 w-8 p-0 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
                           onClick={(e) => {
                             e.stopPropagation();
                             onSettingsClick(workspace.id);
                           }}
                           title={t('settingsTooltip')}
+                          aria-label={t('settingsTooltip')}
                         >
                           <Settings className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                          className="h-8 w-8 p-0 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700"
                           onClick={(e) => {
                             e.stopPropagation();
                             onCreateArticle(workspace.id);
                           }}
                           title={t('createArticleTooltip')}
+                          aria-label={t('createArticleTooltip')}
                         >
                           <Plus className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                         </Button>

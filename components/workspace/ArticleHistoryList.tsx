@@ -98,10 +98,10 @@ export function ArticleHistoryList({
             {articles.map((article) => (
               <div
                 key={article.id}
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-zinc-50 dark:hover:bg-zinc-800/50 group"
               >
                 <button
-                  className="flex flex-1 items-center gap-2 text-left"
+                  className="flex flex-1 items-center gap-2 text-left min-h-[44px] cursor-pointer"
                   onClick={() => onSelectArticle(article.id)}
                 >
                   <FileText className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
@@ -118,7 +118,7 @@ export function ArticleHistoryList({
                 {/* Ellipsis menu button */}
                 <button
                   ref={(el) => { buttonRefs.current[article.id] = el; }}
-                  className="h-7 w-7 shrink-0 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center cursor-pointer"
+                  className="h-8 w-8 shrink-0 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center cursor-pointer transition-colors duration-200"
                   onClick={(e) => {
                     e.stopPropagation();
                     openDropdown(article.id);
@@ -126,7 +126,7 @@ export function ArticleHistoryList({
                   title={t('moreOptions')}
                   aria-label={t('moreOptions')}
                 >
-                  <MoreHorizontal className="h-4 w-4 text-zinc-400" />
+                  <MoreHorizontal className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                 </button>
               </div>
             ))}
