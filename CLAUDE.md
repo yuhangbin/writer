@@ -103,6 +103,78 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - **Priority**: Prefer CSS variables (`bg-background`, `text-foreground`) over hardcoded colors
 - **Exception**: Red (`bg-red-600`, `text-red-600`) for destructive actions, errors, and warnings only
 
+## Project Structure
+
+```
+writer/
+├── app/                          # Next.js App Router (routes + API)
+│   ├── api/                      # API routes (ai, articles, auth, workspaces)
+│   ├── dashboard/                # Main app page (Server Component)
+│   ├── login/                    # Login page
+│   ├── register/                 # Registration page
+│   ├── layout.tsx                # Root layout with providers
+│   ├── page.tsx                  # Home redirect → /dashboard
+│   ├── error.tsx                 # Error boundary
+│   ├── loading.tsx               # Loading UI (Suspense fallback)
+│   └── not-found.tsx             # 404 page
+├── components/                   # React components by feature
+│   ├── creative-zone/            # Rich text editor (Tiptap)
+│   ├── dashboard/                # DashboardContent (Client Component)
+│   ├── i18n/                     # Language switcher
+│   ├── input-bar/                # AI prompt input
+│   ├── layout/                   # Layout components (MainLayout, headers)
+│   ├── markdown/                 # Markdown rendering utilities
+│   ├── ui/                       # Shadcn/UI base components
+│   └── workspace/                # Workspace CRUD (sidebar, settings, list)
+├── hooks/                        # Custom React hooks
+│   ├── use-auth.ts               # Authentication hook
+│   └── use-mobile.ts             # Mobile detection
+├── lib/                          # Server-side logic & utilities
+│   ├── ai/                       # AI integration (config, generate, prompts)
+│   ├── queries/                  # Cached database queries
+│   ├── generated/                # Prisma generated client
+│   ├── utils/                    # Utility functions (html-to-markdown)
+│   ├── auth.ts                   # JWT auth, cookies, requireAuth()
+│   ├── cache.ts                  # Cache tags & configuration
+│   ├── prisma.ts                 # Prisma client singleton
+│   ├── server-actions.ts         # Server Actions (CRUD + cache revalidation)
+│   └── utils.ts                  # General utilities (cn, wordCount)
+├── prisma/                       # Database schema & migrations
+│   ├── schema.prisma             # Database schema (user, workspace, article)
+│   └── migrations/               # Migration history
+├── messages/                     # i18n translations
+│   ├── en.json                   # English translations
+│   └── zh.json                   # Chinese translations
+├── types/                        # TypeScript type definitions
+│   └── index.ts                  # Shared types (Workspace, Article, etc.)
+├── public/                       # Static assets
+├── .github/                      # GitHub Actions CI/CD
+│   ├── workflows/deploy.yml      # VPS deployment workflow
+│   └── scripts/deploy.sh         # Deployment script
+├── middleware.ts                 # Next.js middleware (i18n routing)
+├── next.config.ts                # Next.js configuration
+├── tsconfig.json                 # TypeScript configuration
+└── components.json               # Shadcn/UI configuration
+```
+
+### Directory Responsibilities
+
+**Server vs Client Split:**
+- **`app/`** - Server Components (data fetching, auth) → passes data to client
+- **`lib/`** - Server-only utilities (database, auth, cache, Server Actions)
+- **`components/`** - Client Components (interactivity, UI state)
+- **`hooks/`** - Client-side hooks (React hooks only)
+
+**Data Layer:**
+- **`lib/queries/`** - Cached read operations (`unstable_cache` with tags)
+- **`lib/server-actions.ts`** - Mutations with cache invalidation
+- **`lib/cache.ts`** - Centralized cache tag configuration
+
+**Component Organization:**
+- Components grouped by **domain/feature**, not by type
+- Each feature directory contains related components
+- `components/ui/` contains reusable Shadcn/UI base components
+
 ## Application Architecture
 
 The app follows a three-zone layout:
@@ -117,15 +189,15 @@ Located in `/types/index.ts`:
 
 - `Workspace` - Isolated work context with settings (targetReader, referenceExample)
 - `Article` - Generated content linked to a workspace
-- `AppState` - Global state with workspaces, currentWorkspaceId, and articles map
 - `ExportFormat` - Supported export types: 'markdown' | 'html' | 'plain'
 
 ### Data Persistence
 
-All data is persisted to localStorage via `/lib/storage.ts`:
-- Workspaces, articles, and app state are saved automatically
-- Article content auto-saves on editor changes
-- No backend/API layer in current MVP
+PostgreSQL database via Prisma:
+- **Tables**: `user`, `workspace`, `article` (singular naming convention)
+- **Soft deletes**: `isDeleted` field on workspace and article
+- **Caching**: Tag-based cache invalidation via `unstable_cache`
+- **Authentication**: JWT tokens in httpOnly cookies
 
 ### Key Components
 
@@ -136,9 +208,12 @@ All data is persisted to localStorage via `/lib/storage.ts`:
 - `/components/creative-zone/` - Tiptap editor with export functionality
 - `/components/ui/` - Shadcn/UI base components
 
-### AI Integration (Placeholder)
+### AI Integration
 
-The current AI generation is simulated with `setTimeout`. Real AI integration needs to be implemented.
+Located in `/lib/ai/`:
+- **`config.ts`** - AI model configuration and provider selection
+- **`generate.ts`** - Stream generation handling
+- **`prompt-builder.ts`** - Prompt construction with workspace context
 
 ## Shadcn/UI Configuration
 
