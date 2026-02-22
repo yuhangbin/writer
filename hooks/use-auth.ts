@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface User {
@@ -17,52 +17,17 @@ export interface UseAuthReturn {
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string, email?: string) => Promise<void>;
   logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
 }
 
+/**
+ * Simplified auth hook for login/register/logout only.
+ * Auth checking is handled by Server Components (dashboard/layout.tsx).
+ */
 export function useAuth(): UseAuthReturn {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const clearInvalidSession = useCallback(async () => {
-    try {
-      await fetch('/api/auth/clear-session', { method: 'POST' });
-    } catch {
-      // Ignore errors when clearing session
-    }
-  }, []);
-
-  const checkAuth = useCallback(async () => {
-    try {
-      const response = await fetch('/api/auth/me');
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-      } else {
-        // Token is invalid or expired
-        setUser(null);
-        await clearInvalidSession();
-      }
-    } catch (err) {
-      setUser(null);
-      await clearInvalidSession();
-    } finally {
-      setLoading(false);
-    }
-  }, [clearInvalidSession]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  // Redirect to login if not authenticated after loading
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [loading, user, router]);
 
   const login = async (username: string, password: string) => {
     setError(null);
@@ -81,7 +46,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(data.user);
-      router.push('/');
+      router.push('/dashboard');
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed';
@@ -109,7 +74,7 @@ export function useAuth(): UseAuthReturn {
       }
 
       setUser(data.user);
-      router.push('/');
+      router.push('/dashboard');
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Registration failed';
@@ -149,6 +114,5 @@ export function useAuth(): UseAuthReturn {
     login,
     register,
     logout,
-    checkAuth,
   };
 }
