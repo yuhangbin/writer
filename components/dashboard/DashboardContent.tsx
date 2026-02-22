@@ -1,0 +1,437 @@
+'use client'
+
+import { useState, useCallback, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import MainLayout from '@/components/layout/MainLayout'
+import { UserProfileHeader } from '@/components/layout/UserProfileHeader'
+import { WorkspaceSidebar } from '@/components/workspace/WorkspaceSidebar'
+import { WorkspaceSettings } from '@/components/workspace/WorkspaceSettings'
+import { InputBar } from '@/components/input-bar/InputBar'
+import { CreativeZone } from '@/components/creative-zone/CreativeZone'
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import type { ExportFormat, Workspace, Article } from '@/types'
+import { calculateWordCount, generateTitleFromPrompt } from '@/lib/utils'
+import { DEFAULT_MODEL_ID } from '@/lib/ai-models'
+import { useAuth } from '@/hooks/use-auth'
+import {
+  createWorkspace,
+  updateWorkspace,
+  deleteWorkspace,
+  createArticle,
+  updateArticle,
+  deleteArticle,
+} from '@/lib/server-actions'
+
+interface DashboardContentProps {
+  userId: string
+  initialWorkspaces: Workspace[]
+  initialArticles: Article[]
+  user: {
+    id: string
+    username: string
+    email: string | null
+    aiModelPreference: string
+  }
+}
+
+export function DashboardContent({
+  userId,
+  initialWorkspaces,
+  initialArticles,
+  user,
+}: DashboardContentProps) {
+  const router = useRouter()
+  const { logout } = useAuth()
+
+  // Local state for data (updated via Server Actions + revalidation)
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(initialWorkspaces)
+  const [articles, setArticles] = useState<Article[]>(initialArticles)
+
+  // UI state
+  const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | null>(
+    initialWorkspaces.length > 0 ? initialWorkspaces[0].id : null
+  )
+  const [currentArticleId, setCurrentArticleId] = useState<string | null>(null)
+  const [inputValue, setInputValue] = useState('')
+  const [articleContent, setArticleContent] = useState('')
+  const [articleTitle, setArticleTitle] = useState('')
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedModelId, setSelectedModelId] = useState(DEFAULT_MODEL_ID)
+
+  const t = useTranslations('alerts')
+  const tCommon = useTranslations('common')
+  const tWorkspace = useTranslations('workspace.create')
+  const tEditor = useTranslations('editor.article')
+
+  // Select first article when workspace changes
+  useEffect(() => {
+    if (currentWorkspaceId && articles.length > 0 && !currentArticleId) {
+      const workspaceArticles = articles.filter(a => a.workspaceId === currentWorkspaceId)
+      if (workspaceArticles.length > 0) {
+        setCurrentArticleId(workspaceArticles[0].id)
+        setArticleContent(workspaceArticles[0].content || '')
+        setArticleTitle(workspaceArticles[0].title)
+      }
+    }
+  }, [articles, currentArticleId, currentWorkspaceId])
+
+  // Handle workspace selection
+  const handleSelectWorkspace = useCallback(
+    (id: string) => {
+      setCurrentWorkspaceId(id)
+
+      // Select first article for this workspace
+      const workspaceArticles = articles.filter(a => a.workspaceId === id)
+      if (workspaceArticles.length > 0) {
+        setCurrentArticleId(workspaceArticles[0].id)
+        setArticleContent(workspaceArticles[0].content || '')
+        setArticleTitle(workspaceArticles[0].title)
+      } else {
+        setCurrentArticleId(null)
+        setArticleContent('')
+        setArticleTitle('')
+      }
+    },
+    [articles]
+  )
+
+  const handleSelectArticle = useCallback(
+    (id: string) => {
+      setCurrentArticleId(id)
+      const article = articles.find(a => a.id === id)
+      if (article) {
+        setArticleContent(article.content || '')
+        setArticleTitle(article.title)
+      }
+    },
+    [articles]
+  )
+
+  const handleCreateWorkspace = useCallback(async () => {
+    const result = await createWorkspace({
+      name: tWorkspace('newWorkspace'),
+      targetReader: '',
+      referenceExample: '',
+    })
+
+    if (result.success && result.workspace) {
+      setWorkspaces(prev => [result.workspace!, ...prev])
+      setCurrentWorkspaceId(result.workspace.id)
+      setArticleContent('')
+      setArticleTitle('')
+      setCurrentArticleId(null)
+      setSettingsOpen(true)
+    } else {
+      alert(result.error || 'Failed to create workspace')
+    }
+  }, [tWorkspace])
+
+  const handleSaveWorkspaceSettings = useCallback(
+    async (workspace: Workspace) => {
+      const result = await updateWorkspace(workspace.id, {
+        name: workspace.name,
+        targetReader: workspace.targetReader || undefined,
+        referenceExample: workspace.referenceExample || undefined,
+      })
+
+      if (result.success && result.workspace) {
+        setWorkspaces(prev =>
+          prev.map(w => (w.id === result.workspace!.id ? result.workspace! : w))
+        )
+      } else {
+        alert(result.error || 'Failed to update workspace')
+      }
+    },
+    []
+  )
+
+  const handleDeleteWorkspace = useCallback(
+    async (id: string) => {
+      const result = await deleteWorkspace(id)
+
+      if (result.success) {
+        setWorkspaces(prev => prev.filter(w => w.id !== id))
+        setArticles(prev => prev.filter(a => a.workspaceId !== id))
+
+        // Clear current workspace if deleted
+        if (currentWorkspaceId === id) {
+          setCurrentWorkspaceId(null)
+          setCurrentArticleId(null)
+          setArticleContent('')
+          setArticleTitle('')
+        }
+      } else {
+        alert(result.error || 'Failed to delete workspace')
+      }
+    },
+    [currentWorkspaceId]
+  )
+
+  const handleInputChange = useCallback((value: string) => {
+    setInputValue(value)
+  }, [])
+
+  // Handle generating content with AI
+  const handleGenerate = useCallback(async () => {
+    if (!inputValue.trim() || !currentWorkspaceId) return
+
+    setIsGenerating(true)
+
+    try {
+      // Get current workspace context
+      const currentWorkspace = workspaces.find(w => w.id === currentWorkspaceId)
+
+      const response = await fetch('/api/ai/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modelId: selectedModelId,
+          prompt: inputValue,
+          workspaceContext: {
+            targetReader: currentWorkspace?.targetReader,
+            referenceExample: currentWorkspace?.referenceExample,
+          },
+          options: {
+            temperature: 0.7,
+            maxTokens: 4000,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Generation failed')
+      }
+
+      const data = await response.json()
+      setArticleContent(data.content || '')
+      setArticleTitle(generateTitleFromPrompt(inputValue))
+      setInputValue('')
+    } catch (error) {
+      console.error('Failed to generate article:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Generation failed'
+      alert(t('error', { message: errorMessage }))
+    } finally {
+      setIsGenerating(false)
+    }
+  }, [inputValue, currentWorkspaceId, selectedModelId, workspaces, t])
+
+  const handleArticleChange = useCallback(
+    async (content: string) => {
+      setArticleContent(content)
+      if (currentArticleId) {
+        // Optimistic update - don't wait for server
+        setArticles(prev =>
+          prev.map(a =>
+            a.id === currentArticleId ? { ...a, content, wordCount: calculateWordCount(content) } : a
+          )
+        )
+        // Server Action happens in background (debounced via useEffect)
+      }
+    },
+    [currentArticleId]
+  )
+
+  const handleTitleChange = useCallback(
+    async (title: string) => {
+      setArticleTitle(title)
+      if (currentArticleId) {
+        const result = await updateArticle(currentArticleId, { title })
+        if (result.success && result.article) {
+          setArticles(prev =>
+            prev.map(a => (a.id === currentArticleId ? result.article! : a))
+          )
+        }
+      }
+    },
+    [currentArticleId]
+  )
+
+  // Handle export functionality
+  const handleExport = useCallback((format: ExportFormat) => {
+    if (!articleContent) return
+
+    const content = articleContent
+    let filename = `${articleTitle || 'untitled'}`
+    let mimeType = 'text/plain'
+
+    switch (format) {
+      case 'markdown':
+        filename += '.md'
+        mimeType = 'text/markdown'
+        break
+      case 'html':
+        filename += '.html'
+        mimeType = 'text/html'
+        break
+      case 'plain':
+        filename += '.txt'
+        mimeType = 'text/plain'
+        break
+    }
+
+    // Create blob and download
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }, [articleContent, articleTitle])
+
+  // Get articles for a workspace
+  const handleGetArticlesForWorkspace = useCallback(
+    (workspaceId: string) => {
+      return articles.filter(a => a.workspaceId === workspaceId)
+    },
+    [articles]
+  )
+
+  // Create a new article
+  const handleCreateArticle = useCallback(async (workspaceId?: string) => {
+    const targetWorkspaceId = workspaceId || currentWorkspaceId
+    if (!targetWorkspaceId) return
+
+    const result = await createArticle({
+      workspaceId: targetWorkspaceId,
+      title: tEditor('untitled'),
+      content: '',
+    })
+
+    if (result.success && result.article) {
+      setArticles(prev => [result.article!, ...prev])
+      setCurrentArticleId(result.article.id)
+      setArticleContent('')
+      setArticleTitle(tEditor('untitled'))
+    } else {
+      alert(result.error || 'Failed to create article')
+    }
+  }, [currentWorkspaceId, tEditor])
+
+  // Delete an article
+  const handleDeleteArticle = useCallback(async (articleId: string) => {
+    // Immediately clear current article if it's the one being deleted
+    if (currentArticleId === articleId) {
+      setCurrentArticleId(null)
+      setArticleContent('')
+      setArticleTitle('')
+    }
+
+    const result = await deleteArticle(articleId)
+
+    if (result.success) {
+      setArticles(prev => prev.filter(a => a.id !== articleId))
+
+      // After deletion, select another article if available
+      const workspaceArticles = articles.filter(
+        a => a.workspaceId === currentWorkspaceId && a.id !== articleId
+      )
+      if (workspaceArticles.length > 0) {
+        setCurrentArticleId(workspaceArticles[0].id)
+        setArticleContent(workspaceArticles[0].content || '')
+        setArticleTitle(workspaceArticles[0].title)
+      }
+    } else {
+      alert(result.error || 'Failed to delete article')
+    }
+  }, [currentArticleId, currentWorkspaceId, articles])
+
+  // Manual save handler
+  const handleManualSave = useCallback(async () => {
+    if (!currentArticleId) return
+
+    const result = await updateArticle(currentArticleId, {
+      content: articleContent,
+      title: articleTitle,
+    })
+
+    if (result.success) {
+      alert(t('articleSaved'))
+    } else {
+      alert(result.error || t('saveFailed'))
+    }
+  }, [currentArticleId, articleContent, articleTitle, t])
+
+  // Auto-save article content (debounced via revalidation)
+  useEffect(() => {
+    const saveArticle = async () => {
+      // Only save if current article still exists in the articles list
+      if (currentArticleId && articles.some(a => a.id === currentArticleId)) {
+        await updateArticle(currentArticleId, { content: articleContent })
+      }
+    }
+
+    // Debounce: wait 1 second after last change before saving
+    const timer = setTimeout(() => {
+      saveArticle()
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [articleContent, currentArticleId, articles])
+
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <MainLayout
+        sidebar={
+          <WorkspaceSidebar
+            workspaces={workspaces}
+            currentWorkspaceId={currentWorkspaceId}
+            onSelectWorkspace={handleSelectWorkspace}
+            onCreateWorkspace={handleCreateWorkspace}
+            onSettingsClick={(workspaceId) => {
+              setCurrentWorkspaceId(workspaceId)
+              setSettingsOpen(true)
+            }}
+            getArticlesForWorkspace={handleGetArticlesForWorkspace}
+            currentArticleId={currentArticleId}
+            onSelectArticle={handleSelectArticle}
+            onDeleteArticle={handleDeleteArticle}
+            onCreateArticle={handleCreateArticle}
+          />
+        }
+        inputBar={
+          <InputBar
+            value={inputValue}
+            onChange={handleInputChange}
+            onGenerate={handleGenerate}
+            isLoading={isGenerating}
+            selectedModelId={selectedModelId}
+            onModelChange={setSelectedModelId}
+          />
+        }
+        creativeZone={
+          <CreativeZone
+            content={articleContent}
+            onChange={handleArticleChange}
+            onExport={handleExport}
+            hasWorkspace={!!currentWorkspaceId}
+            articleTitle={articleTitle}
+            onTitleChange={handleTitleChange}
+            onSave={currentArticleId ? handleManualSave : undefined}
+          />
+        }
+        headerLeft={<SidebarTrigger />}
+        userProfile={
+          <UserProfileHeader
+            user={user}
+            onLogout={logout}
+          />
+        }
+      />
+      {settingsOpen && (
+        <WorkspaceSettings
+          workspace={workspaces.find((w) => w.id === currentWorkspaceId) || null}
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          onSave={handleSaveWorkspaceSettings}
+          onDeleteWorkspace={handleDeleteWorkspace}
+        />
+      )}
+    </SidebarProvider>
+  )
+}
